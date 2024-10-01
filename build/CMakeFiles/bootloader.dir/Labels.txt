@@ -1,0 +1,13 @@
+# Target labels
+ bootloader
+# Source files and their labels
+/home/ynghia/CODE/IDF/gptimer/build/CMakeFiles/bootloader
+/home/ynghia/CODE/IDF/gptimer/build/CMakeFiles/bootloader.rule
+/home/ynghia/CODE/IDF/gptimer/build/CMakeFiles/bootloader-complete.rule
+/home/ynghia/CODE/IDF/gptimer/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
+/home/ynghia/CODE/IDF/gptimer/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
+/home/ynghia/CODE/IDF/gptimer/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
+/home/ynghia/CODE/IDF/gptimer/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule
+/home/ynghia/CODE/IDF/gptimer/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
+/home/ynghia/CODE/IDF/gptimer/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
+/home/ynghia/CODE/IDF/gptimer/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule

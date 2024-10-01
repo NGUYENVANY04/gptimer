@@ -1,0 +1,23 @@
+{
+  "C_Cpp.intelliSenseEngine": "default",
+  "idf.flashType": "UART",
+  "idf.port": "/dev/ttyUSB0",
+  "files.associations": {
+    "gptimer.h": "c",
+    "queue.h": "c",
+    "bitset": "c",
+    "algorithm": "c",
+    "function_keys.h": "c",
+    "esp_log.h": "c",
+    "display_led.h": "c",
+    "stdio.h": "c",
+    "esp_system.h": "c",
+    "gpio.h": "c",
+    "freertos.h": "c",
+    "handle_isr.h": "c"
+  },
+  "idf.adapterTargetName": "esp32",
+  "idf.openOcdConfigs": [
+    "board/esp32-wrover-kit-3.3v.cfg"
+  ]
+}
