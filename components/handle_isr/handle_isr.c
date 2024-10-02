@@ -15,6 +15,8 @@ uint64_t timer_2 = 0;
 
 int count_setting = 1;
 bool led_on = false; // State of the LED
+bool current_option = true;
+void option_1();
 void blink_led()
 {
     ESP_LOGI("Option", "Interrupt detected, go option");
@@ -91,6 +93,9 @@ void setting(void *arg)
                 gpio_isr_handler_remove(15);
                 gpio_isr_handler_add(GPIO_NUM_15, option_isr_handler, NULL);
 
+                gpio_isr_handler_add(GPIO_NUM_18, increase_option_isr_handler, NULL);
+                gpio_isr_handler_add(GPIO_NUM_19, decreased_option_isr_handler, NULL);
+                option_1();
                 last_countsetting_time = current_time;
             }
 
@@ -103,50 +108,69 @@ void increase(void *arg)
     while (true)
     {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY); // Wait for notification from ISR
-        ESP_LOGI("Log", "%lld", timer_1++);
+        if (current_option)
+        { // Increase time for option 1
+            timer_1 += 100;
+            ESP_LOGI("Option 1", "Increased time: %lld ms", timer_1);
+        }
+        else
+        {
+            // Increase time for option 2
+            timer_2 += 100; // Increment by 100 ms (adjust as needed)
+            ESP_LOGI("Option 2", "Increased time: %lld ms", timer_2);
+        }
     }
 }
+
 void decreased(void *arg)
 {
     while (true)
     {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY); // Wait for notification from ISR
-        ESP_LOGI("Log", "%lld", timer_1--);
+        if (current_option)
+        { // Decrease time for option 1
+            if (timer_1 >= 100)
+            {
+                timer_1 -= 100;
+                ESP_LOGI("Option 1", "Decreased time: %lld ms", timer_1);
+            }
+        }
+        else
+        { // Decrease time for option 2
+            if (timer_2 >= 100)
+            {
+                timer_2 -= 100; // Decrement by 100 ms (ensure it doesn't go below 0)
+                ESP_LOGI("Option 2", "Decreased time: %lld ms", timer_2);
+            }
+        }
     }
 }
 void option_1()
 {
+    current_option = true;
     ESP_LOGI("Log", "Option 1");
-    gpio_isr_handler_remove(18);
-    gpio_isr_handler_remove(19);
-
-    gpio_isr_handler_add(GPIO_NUM_18, increase_option_isr_handler, NULL);
-    gpio_isr_handler_add(GPIO_NUM_19, decreased_option_isr_handler, NULL);
+    ESP_LOGI("Log", "Change timer Option 1");
 }
 void option_2()
 {
+    current_option = false;
     ESP_LOGI("Log", "Option 2");
-    gpio_isr_handler_remove(15);
-
-    gpio_isr_handler_add(GPIO_NUM_15, setting_isr_handler, NULL);
-    gpio_isr_handler_add(GPIO_NUM_15, setting_isr_handler, NULL);
+    ESP_LOGI("Log", "Change timer Option 2");
 }
 
 void option(void *arg)
 {
-    bool option = false;
     while (true)
     {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY); // Wait for notification from ISR
-        if (option)
-        {
-            option_1();
-        }
-        else
+        if (current_option)
         {
             option_2();
         }
-        option = !option;
+        else
+        {
+            option_1();
+        }
     }
 }
 
