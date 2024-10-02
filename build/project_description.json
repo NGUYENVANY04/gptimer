@@ -1,7 +1,7 @@
 {
     "version":            "1.1",
     "project_name":       "gptimer",
-    "project_version":    "1",
+    "project_version":    "078d87a-dirty",
     "project_path":       "/home/ynghia/CODE/IDF/gptimer",
     "idf_path":           "/home/ynghia/esp/esp-idf",
     "build_dir":          "/home/ynghia/CODE/IDF/gptimer/build",

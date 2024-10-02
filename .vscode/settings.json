@@ -14,7 +14,9 @@
     "esp_system.h": "c",
     "gpio.h": "c",
     "freertos.h": "c",
-    "handle_isr.h": "c"
+    "handle_isr.h": "c",
+    "task.h": "c",
+    "portmacro.h": "c"
   },
   "idf.adapterTargetName": "esp32",
   "idf.openOcdConfigs": [

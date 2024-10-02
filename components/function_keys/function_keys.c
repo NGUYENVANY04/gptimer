@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <driver/gpio.h>
 #include "function_keys.h"
-#include "handle_isr.h"
-void init_setting(void)
+
+void congfi_io(void)
 {
     // GPIO configuration for button (GPIO 15)
     gpio_config_t io_conf_isr = {
@@ -25,9 +25,5 @@ void init_setting(void)
     gpio_config(&io_conf_isr); // Configure button GPIO
     gpio_config(&io_conf_led); // Configure LED GPIO
 
-    gpio_install_isr_service(0);
-    gpio_isr_handler_add(GPIO_NUM_15, setting_isr_handler, NULL);
-
-    xTaskCreate(setting, "setting", 4096, NULL, 3, &task_setting);
-    xTaskCreate(option, "option", 4096, NULL, 3, &toggle_option);
+    
 }
