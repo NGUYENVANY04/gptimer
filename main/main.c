@@ -4,10 +4,14 @@
 #include "freertos/queue.h"
 #include "driver/gptimer.h"
 #include "esp_log.h"
-#include "function_keys.h"
+#include <sys/time.h>
+#include <esp_system.h>
 #include "handle_isr.h"
+#include "display_tm1637.h"
+#include "function_keys.h"
+// #include "savedata.h"
 
-// static const char *TAG = "example";
+#define TAG "app"
 
 typedef struct
 {
@@ -32,6 +36,13 @@ typedef struct
 
 void app_main(void)
 {
+    // esp_err_t ret = nvs_flash_init();
+    // if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
+    // {
+    //     ESP_ERROR_CHECK(nvs_flash_erase());
+    //     ret = nvs_flash_init();
+    // }
+    // ESP_ERROR_CHECK(ret);
     // example_queue_element_t ele;
     // QueueHandle_t queue = xQueueCreate(10, sizeof(example_queue_element_t));
     // if (!queue)

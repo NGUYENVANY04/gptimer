@@ -16,7 +16,18 @@
     "freertos.h": "c",
     "handle_isr.h": "c",
     "task.h": "c",
-    "portmacro.h": "c"
+    "portmacro.h": "c",
+    "display_tm1637.h": "c",
+    "gpio_types.h": "c",
+    "savedata.h": "c",
+    "nvs_flash.h": "c",
+    "nvs.h": "c",
+    "esp_partition.h": "c",
+    "inttypes.h": "c",
+    "ets_sys.h": "c",
+    "time.h": "c",
+    "sdkconfig.h": "c",
+    "malloc.h": "c"
   },
   "idf.adapterTargetName": "esp32",
   "idf.openOcdConfigs": [

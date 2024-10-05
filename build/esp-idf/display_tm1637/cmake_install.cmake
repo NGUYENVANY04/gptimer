@@ -1,4 +1,4 @@
-# Install script for directory: /home/ynghia/CODE/IDF/gptimer/components/display_led
+# Install script for directory: /home/ynghia/CODE/IDF/gptimer/components/display_tm1637
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

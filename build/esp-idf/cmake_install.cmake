@@ -404,6 +404,11 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
+  include("/home/ynghia/CODE/IDF/gptimer/build/esp-idf/display_tm1637/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
   include("/home/ynghia/CODE/IDF/gptimer/build/esp-idf/handle_isr/cmake_install.cmake")
 endif()
 
@@ -414,6 +419,6 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/home/ynghia/CODE/IDF/gptimer/build/esp-idf/display_led/cmake_install.cmake")
+  include("/home/ynghia/CODE/IDF/gptimer/build/esp-idf/savedata/cmake_install.cmake")
 endif()
 

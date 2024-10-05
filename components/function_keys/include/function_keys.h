@@ -5,8 +5,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/portmacro.h"
-
-#define DEBOUNCE_DELAY_MS 500
+#define DEBOUNCE_DELAY_MS 200
 
 void congfi_io();
 #endif // FUNCTION_KEYS_H

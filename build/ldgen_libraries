@@ -60,6 +60,7 @@
 /home/ynghia/CODE/IDF/gptimer/build/esp-idf/spiffs/libspiffs.a
 /home/ynghia/CODE/IDF/gptimer/build/esp-idf/wifi_provisioning/libwifi_provisioning.a
 /home/ynghia/CODE/IDF/gptimer/build/esp-idf/main/libmain.a
+/home/ynghia/CODE/IDF/gptimer/build/esp-idf/display_tm1637/libdisplay_tm1637.a
 /home/ynghia/CODE/IDF/gptimer/build/esp-idf/handle_isr/libhandle_isr.a
 /home/ynghia/CODE/IDF/gptimer/build/esp-idf/function_keys/libfunction_keys.a
-/home/ynghia/CODE/IDF/gptimer/build/esp-idf/display_led/libdisplay_led.a
+/home/ynghia/CODE/IDF/gptimer/build/esp-idf/savedata/libsavedata.a
