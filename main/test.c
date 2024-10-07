@@ -54,3 +54,10 @@
 //     print(hold1);
 //     // Free dynamically allocated memory
 // }
+#include <stdio.h>
+int test;
+int main()
+{
+    scanf("%d", &test);
+    printf("%d", test);
+}

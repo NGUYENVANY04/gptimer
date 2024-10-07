@@ -27,7 +27,11 @@
     "ets_sys.h": "c",
     "time.h": "c",
     "sdkconfig.h": "c",
-    "malloc.h": "c"
+    "malloc.h": "c",
+    "*.tcc": "c",
+    "cstddef": "c",
+    "functional": "c",
+    "timer_handle.h": "c"
   },
   "idf.adapterTargetName": "esp32",
   "idf.openOcdConfigs": [

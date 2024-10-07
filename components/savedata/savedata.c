@@ -1,75 +1,75 @@
 #include "savedata.h"
+#include "timer_handle.h"
+#include "esp_log.h"
+#include "display_tm1637.h"
+#include "function_keys.h"
+uint64_t timer_1 = 0, timer_2 = 0;
+nvs_handle nvs_handle_timer_1;
+nvs_handle nvs_handle_timer_2;
 
-void app_main(void)
+void handle_data()
 {
-    // Initialize NVS
-    esp_err_t err = nvs_flash_init();
-    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND)
-    {
-        // NVS partition was truncated and needs to be erased
-        // Retry nvs_flash_init
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        err = nvs_flash_init();
-    }
-    ESP_ERROR_CHECK(err);
+    tm1637_lcd_t *led1 = tm1637_init(4, 5);
+    tm1637_lcd_t *led2 = tm1637_init(26, 25);
+    // Open NVS for timer_1
+    esp_err_t err_timer_1 = nvs_open("timer_1", NVS_READONLY, &nvs_handle_timer_1);
+    esp_err_t err_timer_2 = nvs_open("timer_2", NVS_READONLY, &nvs_handle_timer_2);
 
-    // Open
-    printf("\n");
-    printf("Opening Non-Volatile Storage (NVS) handle... ");
-    nvs_handle_t my_handle;
-    err = nvs_open("storage", NVS_READWRITE, &my_handle);
-    if (err != ESP_OK)
+    if (err_timer_1 == ESP_ERR_NVS_NOT_FOUND || err_timer_2 == ESP_ERR_NVS_NOT_FOUND)
     {
-        printf("Error (%s) opening NVS handle!\n", esp_err_to_name(err));
+        printf("cos looix ");
+
+        // Namespace does not exist, create it with default values
+        ESP_ERROR_CHECK(nvs_open("timer_1", NVS_READWRITE, &nvs_handle_timer_1));
+        ESP_ERROR_CHECK(nvs_set_u64(nvs_handle_timer_1, "TIMER_1_KEY", timer_1));
+        ESP_ERROR_CHECK(nvs_commit(nvs_handle_timer_1));
+        nvs_close(nvs_handle_timer_1);
+
+        ESP_ERROR_CHECK(nvs_open("timer_2", NVS_READWRITE, &nvs_handle_timer_2));
+        esp_err_t err = nvs_set_u64(nvs_handle_timer_2, "TIMER_2_KEY", timer_2);
+        if (err != ESP_OK)
+        {
+            ESP_LOGE("NVS", "Error saving timer_2: %s", esp_err_to_name(err));
+        }
+        ESP_ERROR_CHECK(nvs_commit(nvs_handle_timer_2));
+        nvs_close(nvs_handle_timer_2);
+
+        // Re-open the namespace in read-only mode
+        err_timer_1 = nvs_open("timer_1", NVS_READONLY, &nvs_handle_timer_1);
+        err_timer_2 = nvs_open("timer_2", NVS_READONLY, &nvs_handle_timer_2);
+    }
+
+    // Read stored timer values
+    err_timer_1 = nvs_get_u64(nvs_handle_timer_1, "TIMER_1_KEY", &timer_1);
+    if (err_timer_1 != ESP_OK)
+    {
+        ESP_LOGE("NVS", "Error reading timer_1: %s", esp_err_to_name(err_timer_1));
+    }
+
+    err_timer_2 = nvs_get_u64(nvs_handle_timer_2, "TIMER_2_KEY", &timer_2);
+    if (err_timer_2 != ESP_OK)
+    {
+        ESP_LOGE("NVS", "Error reading timer_2: %s", esp_err_to_name(err_timer_2));
+    }
+
+    // Close the NVS handles
+    nvs_close(nvs_handle_timer_1);
+    nvs_close(nvs_handle_timer_2);
+
+    // Print the timers
+    printf("Timer 1: %llu\n", timer_1);
+    printf("Timer 2: %llu\n", timer_2);
+
+    // Check the validity of the timers and set up if needed
+    if (err_timer_1 == ESP_OK && err_timer_2 == ESP_OK && timer_1 > 0 && timer_2 > 0)
+    {
+        setup_timer_1(timer_1 * 1000000);
+        setup_timer_2(timer_2 * 1000000);
     }
     else
     {
-        printf("Done\n");
-
-        // Read
-        printf("Reading restart counter from NVS ... ");
-        int32_t restart_counter = 0; // value will default to 0, if not set yet in NVS
-        err = nvs_get_i32(my_handle, "restart_counter", &restart_counter);
-        switch (err)
-        {
-        case ESP_OK:
-            printf("Done\n");
-            printf("Restart counter = %" PRIu32 "\n", restart_counter);
-            break;
-        case ESP_ERR_NVS_NOT_FOUND:
-            printf("The value is not initialized yet!\n");
-            break;
-        default:
-            printf("Error (%s) reading!\n", esp_err_to_name(err));
-        }
-
-        // Write
-        printf("Updating restart counter in NVS ... ");
-        restart_counter++;
-        err = nvs_set_i32(my_handle, "restart_counter", restart_counter);
-        printf((err != ESP_OK) ? "Failed!\n" : "Done\n");
-
-        // Commit written value.
-        // After setting any values, nvs_commit() must be called to ensure changes are written
-        // to flash storage. Implementations may write to storage at other times,
-        // but this is not guaranteed.
-        printf("Committing updates in NVS ... ");
-        err = nvs_commit(my_handle);
-        printf((err != ESP_OK) ? "Failed!\n" : "Done\n");
-
-        // Close
-        nvs_close(my_handle);
+        printf("No valid timers found.\n");
     }
-
-    printf("\n");
-
-    // Restart module
-    for (int i = 10; i >= 0; i--)
-    {
-        printf("Restarting in %d seconds...\n", i);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-    }
-    printf("Restarting now.\n");
-    fflush(stdout);
-    esp_restart();
+    tm1637_set_number(led1, timer_1);
+    tm1637_set_number(led2, timer_2);
 }

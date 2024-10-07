@@ -61,6 +61,7 @@ $<TARGET_FILE:__idf_spiffs>
 $<TARGET_FILE:__idf_wifi_provisioning>
 $<TARGET_FILE:__idf_main>
 $<TARGET_FILE:__idf_display_tm1637>
+$<TARGET_FILE:__idf_timer_handle>
+$<TARGET_FILE:__idf_savedata>
 $<TARGET_FILE:__idf_handle_isr>
 $<TARGET_FILE:__idf_function_keys>
-$<TARGET_FILE:__idf_savedata>
