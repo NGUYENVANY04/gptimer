@@ -1,6 +1,15 @@
-
+/**
+ * ESP-32 IDF library for control TM1637 LED 7-Segment display
+ *
+ * Author: Petro <petro@petro.ws>
+ * Modified by: Francesco <bez@ineltek.it>
+ * Project homepage: https://github.com/petrows/esp-32-tm1637
+ * Example: https://github.com/petrows/esp-32-tm1637-example
+ *
+ */
 
 #include "display_tm1637.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <rom/ets_sys.h>
@@ -24,7 +33,7 @@ static const int8_t tm1637_symbols[] = {
     0x7c, // 0b01111100,    // b
     0x39, // 0b00111001,    // C
     0x5e, // 0b01011110,    // d
-    0x79, // 0b01 111001,    // E
+    0x79, // 0b01111001,    // E
     0x71, // 0b01110001     // F
 };
 
@@ -91,7 +100,7 @@ void tm1637_delay()
 
 // PUBLIC PART:
 
-tm1637_lcd_t *tm1637_init(gpio_num_t pin_clk, gpio_num_t pin_data)
+tm1637_lcd_t *tm1637_init(int pin_clk, int pin_data)
 {
     tm1637_lcd_t *lcd = malloc(sizeof(tm1637_lcd_t));
     lcd->m_pin_clk = pin_clk;
@@ -160,30 +169,20 @@ void tm1637_set_number_lead_dot(tm1637_lcd_t *lcd, uint16_t number, bool lead_ze
 
     if (number < 10)
     {
-        tm1637_set_segment_number(lcd, 3, number, dot_mask & 0x01);
-        tm1637_set_segment_number(lcd, 2, lead_number, dot_mask & 0x02);
-        tm1637_set_segment_number(lcd, 1, lead_number, dot_mask & 0x04);
-        tm1637_set_segment_number(lcd, 0, lead_number, dot_mask & 0x08);
+        tm1637_set_segment_number(lcd, 2, number, dot_mask & 0x01);
+        tm1637_set_segment_number(lcd, 1, lead_number, dot_mask & 0x02);
+        tm1637_set_segment_number(lcd, 0, lead_number, dot_mask & 0x04);
     }
     else if (number < 100)
     {
-        tm1637_set_segment_number(lcd, 3, number % 10, dot_mask & 0x01);
-        tm1637_set_segment_number(lcd, 2, (number / 10) % 10, dot_mask & 0x02);
-        tm1637_set_segment_number(lcd, 1, lead_number, dot_mask & 0x04);
-        tm1637_set_segment_number(lcd, 0, lead_number, dot_mask & 0x08);
-    }
-    else if (number < 1000)
-    {
-        tm1637_set_segment_number(lcd, 3, number % 10, dot_mask & 0x01);
-        tm1637_set_segment_number(lcd, 2, (number / 10) % 10, dot_mask & 0x02);
-        tm1637_set_segment_number(lcd, 1, (number / 100) % 10, dot_mask & 0x04);
-        tm1637_set_segment_number(lcd, 0, lead_number, dot_mask & 0x08);
+        tm1637_set_segment_number(lcd, 2, number % 10, dot_mask & 0x01);
+        tm1637_set_segment_number(lcd, 1, (number / 10) % 10, dot_mask & 0x02);
+        tm1637_set_segment_number(lcd, 0, lead_number, dot_mask & 0x04);
     }
     else
     {
-        tm1637_set_segment_number(lcd, 3, number % 10, dot_mask & 0x01);
-        tm1637_set_segment_number(lcd, 2, (number / 10) % 10, dot_mask & 0x02);
-        tm1637_set_segment_number(lcd, 1, (number / 100) % 10, dot_mask & 0x04);
-        tm1637_set_segment_number(lcd, 0, (number / 1000) % 10, dot_mask & 0x08);
+        tm1637_set_segment_number(lcd, 2, number % 10, dot_mask & 0x01);
+        tm1637_set_segment_number(lcd, 1, (number / 10) % 10, dot_mask & 0x02);
+        tm1637_set_segment_number(lcd, 0, (number / 100) % 10, dot_mask & 0x04);
     }
 }

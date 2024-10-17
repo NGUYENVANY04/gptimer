@@ -1,7 +1,7 @@
 {
     "version":            "1.1",
     "project_name":       "gptimer",
-    "project_version":    "813dedb-dirty",
+    "project_version":    "8b81a31-dirty",
     "project_path":       "/home/ynghia/CODE/IDF/gptimer",
     "idf_path":           "/home/ynghia/esp/esp-idf",
     "build_dir":          "/home/ynghia/CODE/IDF/gptimer/build",
@@ -25,8 +25,8 @@
         "COMPONENT_KCONFIGS_PROJBUILD" : "/home/ynghia/esp/esp-idf/components/bootloader/Kconfig.projbuild;/home/ynghia/esp/esp-idf/components/esp_app_format/Kconfig.projbuild;/home/ynghia/esp/esp-idf/components/esp_rom/Kconfig.projbuild;/home/ynghia/esp/esp-idf/components/esptool_py/Kconfig.projbuild;/home/ynghia/esp/esp-idf/components/partition_table/Kconfig.projbuild"
     },
     "common_component_reqs": [ "cxx", "newlib", "freertos", "esp_hw_support", "heap", "log", "soc", "hal", "esp_rom", "esp_common", "esp_system", "xtensa" ],
-    "build_components" : [ "app_trace", "app_update", "bootloader", "bootloader_support", "bt", "cmock", "console", "cxx", "display_tm1637", "driver", "efuse", "esp-tls", "esp_adc", "esp_app_format", "esp_coex", "esp_common", "esp_eth", "esp_event", "esp_gdbstub", "esp_hid", "esp_http_client", "esp_http_server", "esp_https_ota", "esp_https_server", "esp_hw_support", "esp_lcd", "esp_local_ctrl", "esp_mm", "esp_netif", "esp_netif_stack", "esp_partition", "esp_phy", "esp_pm", "esp_psram", "esp_ringbuf", "esp_rom", "esp_system", "esp_timer", "esp_wifi", "espcoredump", "esptool_py", "fatfs", "freertos", "function_keys", "hal", "handle_isr", "heap", "http_parser", "idf_test", "ieee802154", "json", "log", "lwip", "main", "mbedtls", "mqtt", "newlib", "nvs_flash", "openthread", "partition_table", "perfmon", "protobuf-c", "protocomm", "pthread", "savedata", "sdmmc", "soc", "spi_flash", "spiffs", "tcp_transport", "timer_handle", "ulp", "unity", "usb", "vfs", "wear_levelling", "wifi_provisioning", "wpa_supplicant", "xtensa", "" ],
-    "build_component_paths" : [ "/home/ynghia/esp/esp-idf/components/app_trace", "/home/ynghia/esp/esp-idf/components/app_update", "/home/ynghia/esp/esp-idf/components/bootloader", "/home/ynghia/esp/esp-idf/components/bootloader_support", "/home/ynghia/esp/esp-idf/components/bt", "/home/ynghia/esp/esp-idf/components/cmock", "/home/ynghia/esp/esp-idf/components/console", "/home/ynghia/esp/esp-idf/components/cxx", "/home/ynghia/CODE/IDF/gptimer/components/display_tm1637", "/home/ynghia/esp/esp-idf/components/driver", "/home/ynghia/esp/esp-idf/components/efuse", "/home/ynghia/esp/esp-idf/components/esp-tls", "/home/ynghia/esp/esp-idf/components/esp_adc", "/home/ynghia/esp/esp-idf/components/esp_app_format", "/home/ynghia/esp/esp-idf/components/esp_coex", "/home/ynghia/esp/esp-idf/components/esp_common", "/home/ynghia/esp/esp-idf/components/esp_eth", "/home/ynghia/esp/esp-idf/components/esp_event", "/home/ynghia/esp/esp-idf/components/esp_gdbstub", "/home/ynghia/esp/esp-idf/components/esp_hid", "/home/ynghia/esp/esp-idf/components/esp_http_client", "/home/ynghia/esp/esp-idf/components/esp_http_server", "/home/ynghia/esp/esp-idf/components/esp_https_ota", "/home/ynghia/esp/esp-idf/components/esp_https_server", "/home/ynghia/esp/esp-idf/components/esp_hw_support", "/home/ynghia/esp/esp-idf/components/esp_lcd", "/home/ynghia/esp/esp-idf/components/esp_local_ctrl", "/home/ynghia/esp/esp-idf/components/esp_mm", "/home/ynghia/esp/esp-idf/components/esp_netif", "/home/ynghia/esp/esp-idf/components/esp_netif_stack", "/home/ynghia/esp/esp-idf/components/esp_partition", "/home/ynghia/esp/esp-idf/components/esp_phy", "/home/ynghia/esp/esp-idf/components/esp_pm", "/home/ynghia/esp/esp-idf/components/esp_psram", "/home/ynghia/esp/esp-idf/components/esp_ringbuf", "/home/ynghia/esp/esp-idf/components/esp_rom", "/home/ynghia/esp/esp-idf/components/esp_system", "/home/ynghia/esp/esp-idf/components/esp_timer", "/home/ynghia/esp/esp-idf/components/esp_wifi", "/home/ynghia/esp/esp-idf/components/espcoredump", "/home/ynghia/esp/esp-idf/components/esptool_py", "/home/ynghia/esp/esp-idf/components/fatfs", "/home/ynghia/esp/esp-idf/components/freertos", "/home/ynghia/CODE/IDF/gptimer/components/function_keys", "/home/ynghia/esp/esp-idf/components/hal", "/home/ynghia/CODE/IDF/gptimer/components/handle_isr", "/home/ynghia/esp/esp-idf/components/heap", "/home/ynghia/esp/esp-idf/components/http_parser", "/home/ynghia/esp/esp-idf/components/idf_test", "/home/ynghia/esp/esp-idf/components/ieee802154", "/home/ynghia/esp/esp-idf/components/json", "/home/ynghia/esp/esp-idf/components/log", "/home/ynghia/esp/esp-idf/components/lwip", "/home/ynghia/CODE/IDF/gptimer/main", "/home/ynghia/esp/esp-idf/components/mbedtls", "/home/ynghia/esp/esp-idf/components/mqtt", "/home/ynghia/esp/esp-idf/components/newlib", "/home/ynghia/esp/esp-idf/components/nvs_flash", "/home/ynghia/esp/esp-idf/components/openthread", "/home/ynghia/esp/esp-idf/components/partition_table", "/home/ynghia/esp/esp-idf/components/perfmon", "/home/ynghia/esp/esp-idf/components/protobuf-c", "/home/ynghia/esp/esp-idf/components/protocomm", "/home/ynghia/esp/esp-idf/components/pthread", "/home/ynghia/CODE/IDF/gptimer/components/savedata", "/home/ynghia/esp/esp-idf/components/sdmmc", "/home/ynghia/esp/esp-idf/components/soc", "/home/ynghia/esp/esp-idf/components/spi_flash", "/home/ynghia/esp/esp-idf/components/spiffs", "/home/ynghia/esp/esp-idf/components/tcp_transport", "/home/ynghia/CODE/IDF/gptimer/components/timer_handle", "/home/ynghia/esp/esp-idf/components/ulp", "/home/ynghia/esp/esp-idf/components/unity", "/home/ynghia/esp/esp-idf/components/usb", "/home/ynghia/esp/esp-idf/components/vfs", "/home/ynghia/esp/esp-idf/components/wear_levelling", "/home/ynghia/esp/esp-idf/components/wifi_provisioning", "/home/ynghia/esp/esp-idf/components/wpa_supplicant", "/home/ynghia/esp/esp-idf/components/xtensa", "" ],
+    "build_components" : [ "app_trace", "app_update", "bootloader", "bootloader_support", "bt", "cmock", "console", "cxx", "display_tm1637", "driver", "efuse", "esp-tls", "esp_adc", "esp_app_format", "esp_coex", "esp_common", "esp_eth", "esp_event", "esp_gdbstub", "esp_hid", "esp_http_client", "esp_http_server", "esp_https_ota", "esp_https_server", "esp_hw_support", "esp_lcd", "esp_local_ctrl", "esp_mm", "esp_netif", "esp_netif_stack", "esp_partition", "esp_phy", "esp_pm", "esp_psram", "esp_ringbuf", "esp_rom", "esp_system", "esp_timer", "esp_wifi", "espcoredump", "esptool_py", "fatfs", "freertos", "function_keys", "hal", "handle_isr", "handle_setting_timer_3", "heap", "http_parser", "idf_test", "ieee802154", "json", "log", "lwip", "main", "mbedtls", "mqtt", "newlib", "nvs_flash", "openthread", "partition_table", "perfmon", "protobuf-c", "protocomm", "pthread", "savedata", "sdmmc", "soc", "spi_flash", "spiffs", "tcp_transport", "timer_handle", "ulp", "unity", "usb", "vfs", "wear_levelling", "webserver", "wifi_provisioning", "wpa_supplicant", "xtensa", "" ],
+    "build_component_paths" : [ "/home/ynghia/esp/esp-idf/components/app_trace", "/home/ynghia/esp/esp-idf/components/app_update", "/home/ynghia/esp/esp-idf/components/bootloader", "/home/ynghia/esp/esp-idf/components/bootloader_support", "/home/ynghia/esp/esp-idf/components/bt", "/home/ynghia/esp/esp-idf/components/cmock", "/home/ynghia/esp/esp-idf/components/console", "/home/ynghia/esp/esp-idf/components/cxx", "/home/ynghia/CODE/IDF/gptimer/components/display_tm1637", "/home/ynghia/esp/esp-idf/components/driver", "/home/ynghia/esp/esp-idf/components/efuse", "/home/ynghia/esp/esp-idf/components/esp-tls", "/home/ynghia/esp/esp-idf/components/esp_adc", "/home/ynghia/esp/esp-idf/components/esp_app_format", "/home/ynghia/esp/esp-idf/components/esp_coex", "/home/ynghia/esp/esp-idf/components/esp_common", "/home/ynghia/esp/esp-idf/components/esp_eth", "/home/ynghia/esp/esp-idf/components/esp_event", "/home/ynghia/esp/esp-idf/components/esp_gdbstub", "/home/ynghia/esp/esp-idf/components/esp_hid", "/home/ynghia/esp/esp-idf/components/esp_http_client", "/home/ynghia/esp/esp-idf/components/esp_http_server", "/home/ynghia/esp/esp-idf/components/esp_https_ota", "/home/ynghia/esp/esp-idf/components/esp_https_server", "/home/ynghia/esp/esp-idf/components/esp_hw_support", "/home/ynghia/esp/esp-idf/components/esp_lcd", "/home/ynghia/esp/esp-idf/components/esp_local_ctrl", "/home/ynghia/esp/esp-idf/components/esp_mm", "/home/ynghia/esp/esp-idf/components/esp_netif", "/home/ynghia/esp/esp-idf/components/esp_netif_stack", "/home/ynghia/esp/esp-idf/components/esp_partition", "/home/ynghia/esp/esp-idf/components/esp_phy", "/home/ynghia/esp/esp-idf/components/esp_pm", "/home/ynghia/esp/esp-idf/components/esp_psram", "/home/ynghia/esp/esp-idf/components/esp_ringbuf", "/home/ynghia/esp/esp-idf/components/esp_rom", "/home/ynghia/esp/esp-idf/components/esp_system", "/home/ynghia/esp/esp-idf/components/esp_timer", "/home/ynghia/esp/esp-idf/components/esp_wifi", "/home/ynghia/esp/esp-idf/components/espcoredump", "/home/ynghia/esp/esp-idf/components/esptool_py", "/home/ynghia/esp/esp-idf/components/fatfs", "/home/ynghia/esp/esp-idf/components/freertos", "/home/ynghia/CODE/IDF/gptimer/components/function_keys", "/home/ynghia/esp/esp-idf/components/hal", "/home/ynghia/CODE/IDF/gptimer/components/handle_isr", "/home/ynghia/CODE/IDF/gptimer/components/handle_setting_timer_3", "/home/ynghia/esp/esp-idf/components/heap", "/home/ynghia/esp/esp-idf/components/http_parser", "/home/ynghia/esp/esp-idf/components/idf_test", "/home/ynghia/esp/esp-idf/components/ieee802154", "/home/ynghia/esp/esp-idf/components/json", "/home/ynghia/esp/esp-idf/components/log", "/home/ynghia/esp/esp-idf/components/lwip", "/home/ynghia/CODE/IDF/gptimer/main", "/home/ynghia/esp/esp-idf/components/mbedtls", "/home/ynghia/esp/esp-idf/components/mqtt", "/home/ynghia/esp/esp-idf/components/newlib", "/home/ynghia/esp/esp-idf/components/nvs_flash", "/home/ynghia/esp/esp-idf/components/openthread", "/home/ynghia/esp/esp-idf/components/partition_table", "/home/ynghia/esp/esp-idf/components/perfmon", "/home/ynghia/esp/esp-idf/components/protobuf-c", "/home/ynghia/esp/esp-idf/components/protocomm", "/home/ynghia/esp/esp-idf/components/pthread", "/home/ynghia/CODE/IDF/gptimer/components/savedata", "/home/ynghia/esp/esp-idf/components/sdmmc", "/home/ynghia/esp/esp-idf/components/soc", "/home/ynghia/esp/esp-idf/components/spi_flash", "/home/ynghia/esp/esp-idf/components/spiffs", "/home/ynghia/esp/esp-idf/components/tcp_transport", "/home/ynghia/CODE/IDF/gptimer/components/timer_handle", "/home/ynghia/esp/esp-idf/components/ulp", "/home/ynghia/esp/esp-idf/components/unity", "/home/ynghia/esp/esp-idf/components/usb", "/home/ynghia/esp/esp-idf/components/vfs", "/home/ynghia/esp/esp-idf/components/wear_levelling", "/home/ynghia/CODE/IDF/gptimer/components/webserver", "/home/ynghia/esp/esp-idf/components/wifi_provisioning", "/home/ynghia/esp/esp-idf/components/wpa_supplicant", "/home/ynghia/esp/esp-idf/components/xtensa", "" ],
     "build_component_info" : {
         "app_trace": {
             "alias": "idf::app_trace",
@@ -718,6 +718,21 @@
             "sources": [ "/home/ynghia/CODE/IDF/gptimer/components/handle_isr/handle_isr.c" ],
             "include_dirs": [ "include" ]
         },
+        "handle_setting_timer_3": {
+            "alias": "idf::handle_setting_timer_3",
+            "target": "___idf_handle_setting_timer_3",
+            "prefix": "idf",
+            "dir": "/home/ynghia/CODE/IDF/gptimer/components/handle_setting_timer_3",
+            "type": "LIBRARY",
+            "lib": "__idf_handle_setting_timer_3",
+            "reqs": [ "driver", "savedata", "display_tm1637", "function_keys" ],
+            "priv_reqs": [],
+            "managed_reqs": [],
+            "managed_priv_reqs": [],
+            "file": "/home/ynghia/CODE/IDF/gptimer/build/esp-idf/handle_setting_timer_3/libhandle_setting_timer_3.a",
+            "sources": [ "/home/ynghia/CODE/IDF/gptimer/components/handle_setting_timer_3/handle_setting_timer_3.c" ],
+            "include_dirs": [ "include" ]
+        },
         "heap": {
             "alias": "idf::heap",
             "target": "___idf_heap",
@@ -835,7 +850,7 @@
             "managed_reqs": [],
             "managed_priv_reqs": [],
             "file": "/home/ynghia/CODE/IDF/gptimer/build/esp-idf/main/libmain.a",
-            "sources": [ "/home/ynghia/CODE/IDF/gptimer/main/test.c", "/home/ynghia/CODE/IDF/gptimer/main/main.c" ],
+            "sources": [ "/home/ynghia/CODE/IDF/gptimer/main/main.c" ],
             "include_dirs": [ "." ]
         },
         "mbedtls": {
@@ -1085,7 +1100,7 @@
             "dir": "/home/ynghia/CODE/IDF/gptimer/components/timer_handle",
             "type": "LIBRARY",
             "lib": "__idf_timer_handle",
-            "reqs": [ "driver" ],
+            "reqs": [ "driver", "esp_wifi", "esp_http_server", "webserver" ],
             "priv_reqs": [],
             "managed_reqs": [],
             "managed_priv_reqs": [],
@@ -1166,6 +1181,21 @@
             "managed_priv_reqs": [],
             "file": "/home/ynghia/CODE/IDF/gptimer/build/esp-idf/wear_levelling/libwear_levelling.a",
             "sources": [ "/home/ynghia/esp/esp-idf/components/wear_levelling/Partition.cpp", "/home/ynghia/esp/esp-idf/components/wear_levelling/SPI_Flash.cpp", "/home/ynghia/esp/esp-idf/components/wear_levelling/WL_Ext_Perf.cpp", "/home/ynghia/esp/esp-idf/components/wear_levelling/WL_Ext_Safe.cpp", "/home/ynghia/esp/esp-idf/components/wear_levelling/WL_Flash.cpp", "/home/ynghia/esp/esp-idf/components/wear_levelling/crc32.cpp", "/home/ynghia/esp/esp-idf/components/wear_levelling/wear_levelling.cpp" ],
+            "include_dirs": [ "include" ]
+        },
+        "webserver": {
+            "alias": "idf::webserver",
+            "target": "___idf_webserver",
+            "prefix": "idf",
+            "dir": "/home/ynghia/CODE/IDF/gptimer/components/webserver",
+            "type": "LIBRARY",
+            "lib": "__idf_webserver",
+            "reqs": [ "savedata", "esp_wifi", "esp_http_server" ],
+            "priv_reqs": [],
+            "managed_reqs": [],
+            "managed_priv_reqs": [],
+            "file": "/home/ynghia/CODE/IDF/gptimer/build/esp-idf/webserver/libwebserver.a",
+            "sources": [ "/home/ynghia/CODE/IDF/gptimer/components/webserver/webserver.c" ],
             "include_dirs": [ "include" ]
         },
         "wifi_provisioning": {
@@ -2175,6 +2205,18 @@
             "managed_priv_reqs": [],
             "include_dirs": [ "include" ]
         },
+        "handle_setting_timer_3": {
+            "alias": "idf::handle_setting_timer_3",
+            "target": "___idf_handle_setting_timer_3",
+            "prefix": "idf",
+            "dir": "/home/ynghia/CODE/IDF/gptimer/components/handle_setting_timer_3",
+            "lib": "__idf_handle_setting_timer_3",
+            "reqs": [ "driver", "savedata", "display_tm1637", "function_keys" ],
+            "priv_reqs": [],
+            "managed_reqs": [],
+            "managed_priv_reqs": [],
+            "include_dirs": [ "include" ]
+        },
         "savedata": {
             "alias": "idf::savedata",
             "target": "___idf_savedata",
@@ -2193,7 +2235,19 @@
             "prefix": "idf",
             "dir": "/home/ynghia/CODE/IDF/gptimer/components/timer_handle",
             "lib": "__idf_timer_handle",
-            "reqs": [ "driver" ],
+            "reqs": [ "driver", "esp_wifi", "esp_http_server", "webserver" ],
+            "priv_reqs": [],
+            "managed_reqs": [],
+            "managed_priv_reqs": [],
+            "include_dirs": [ "include" ]
+        },
+        "webserver": {
+            "alias": "idf::webserver",
+            "target": "___idf_webserver",
+            "prefix": "idf",
+            "dir": "/home/ynghia/CODE/IDF/gptimer/components/webserver",
+            "lib": "__idf_webserver",
+            "reqs": [ "savedata", "esp_wifi", "esp_http_server" ],
             "priv_reqs": [],
             "managed_reqs": [],
             "managed_priv_reqs": [],

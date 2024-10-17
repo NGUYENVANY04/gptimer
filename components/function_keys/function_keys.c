@@ -6,22 +6,50 @@ void congfi_io(void)
 {
 
     gpio_config_t io_conf_isr = {
-        .pin_bit_mask = (1ULL << GPIO_NUM_16 | 1ULL << GPIO_NUM_17 | 1ULL << GPIO_NUM_18),
+        .pin_bit_mask = (1ULL << GPIO_NUM_16 | 1ULL << GPIO_NUM_17 | 1ULL << GPIO_NUM_18 |
+                         1ULL << GPIO_NUM_0 | 1ULL << GPIO_NUM_12 | 1ULL << GPIO_NUM_15),
         .mode = GPIO_MODE_INPUT,
         .pull_up_en = GPIO_PULLUP_ENABLE,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_NEGEDGE, // Interrupt on falling edge
+        .intr_type = GPIO_INTR_NEGEDGE,
     };
-
-    // GPIO configuration for LED (GPIO 2)
-    gpio_config_t io_conf_led = {
-        .pin_bit_mask = (1ULL << GPIO_NUM_2 | 1ULL << GPIO_NUM_12),
-        .mode = GPIO_MODE_INPUT_OUTPUT,
-        .pull_up_en = GPIO_PULLUP_ENABLE,
+    gpio_config_t relay = {
+        .pin_bit_mask = (1ULL << PIN_RELAY_1 | 1ULL << PIN_RELAY_2 | 1ULL << PIN_RELAY_3), /*!< GPIO pin: set with bit mask, each bit maps to a GPIO */
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
         .intr_type = GPIO_INTR_DISABLE,
     };
 
-    gpio_config(&io_conf_isr); // Configure button GPIO
-    gpio_config(&io_conf_led); // Configure LED GPIO
+    gpio_config(&io_conf_isr);
+    gpio_config(&relay);
+    gpio_set_level(PIN_RELAY_1, 0);
+    gpio_set_level(PIN_RELAY_2, 0);
+    gpio_set_level(PIN_RELAY_3, 0);
+
+    gpio_install_isr_service(0);
 }
+/*
+// Define connections for TM1637 modules
+const int CLK1 = 4, DIO1 = 5; LED1
+const int CLK2 = 14, DIO2 = 27; LED2
+const int CLK4 = 33, DIO4 = 32; LED4
+
+
+
+// Button pins for LED1 and LED2
+const int BTU1 = 16;  // Increase time for LED1
+const int BTD1 = 17;  // Decrease time for LED1
+const int BTSET1 = 18; // Set time for LED1 and LED2
+
+
+
+// Button pins for LED4
+const int BTU4 = 0;  // Increase time for LED4
+const int BTD4 = 12;  // Decrease time for LED4
+const int BTSET4 = 15; // Set time for LED4
+
+// Relay pins
+const int Relay1 = 13;
+const int Relay2 = 21;
+const int Relay3 = 2;*/

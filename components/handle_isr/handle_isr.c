@@ -11,10 +11,7 @@ TaskHandle_t toggle_option = NULL;
 TaskHandle_t increase_option = NULL;
 TaskHandle_t decreased_option = NULL;
 TaskHandle_t save_task_setting = NULL;
-const gpio_num_t LCD_CLK_1 = 4;
-const gpio_num_t LCD_DTA_1 = 5;
-const gpio_num_t LCD_CLK_2 = 26;
-const gpio_num_t LCD_DTA_2 = 25;
+
 uint64_t current_timer_1 = 0;
 uint64_t current_timer_2 = 0;
 uint32_t last_increase_isr_time = 0;
@@ -22,14 +19,9 @@ uint32_t last_decrease_isr_time = 0;
 
 int count_setting = 1;
 bool current_option = true;
-typedef struct
-{
-    tm1637_lcd_t *lcd1;
-    tm1637_lcd_t *lcd2;
 
-} led_t;
 void option_1();
-void init_data();
+void init_data_1();
 void blink_led()
 {
     ESP_LOGI("Option", "Interrupt detected, go option");
@@ -101,6 +93,7 @@ void setting(void *arg)
 {
     while (true)
     {
+
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY); // Wait for notification from ISR
         uint32_t current_time = xTaskGetTickCountFromISR();
         ESP_LOGI("Log", "%d", count_setting);
@@ -116,9 +109,9 @@ void setting(void *arg)
             if (current_time - last_countsetting_time < 2000 / portTICK_PERIOD_MS)
             {
                 blink_led();
-                gpio_isr_handler_remove(16);
-                gpio_isr_handler_add(GPIO_NUM_16, option_isr_handler, NULL);
-                gpio_isr_handler_add(GPIO_NUM_18, increase_option_isr_handler, NULL);
+                gpio_isr_handler_remove(18);
+                gpio_isr_handler_add(GPIO_NUM_18, option_isr_handler, NULL);
+                gpio_isr_handler_add(GPIO_NUM_16, increase_option_isr_handler, NULL);
                 gpio_isr_handler_add(GPIO_NUM_17, decreased_option_isr_handler, NULL);
                 option_1();
                 last_countsetting_time = current_time;
@@ -188,15 +181,30 @@ void save_data()
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         ESP_ERROR_CHECK(nvs_open("timer_1", NVS_READWRITE, &nvs_handle_timer_1));
         esp_err_t err = nvs_set_u64(nvs_handle_timer_1, "TIMER_1_KEY", current_timer_1);
+        ESP_ERROR_CHECK(nvs_commit(nvs_handle_timer_1));
+
         if (err != ESP_OK)
         {
             ESP_LOGE("NVS", "Error (%s) saving timer_1", esp_err_to_name(err));
         }
+        else
+        {
+            uint64_t test = 0;
+            err = nvs_get_u64(nvs_handle_timer_1, "TIMER_1_KEY", &test);
+            if (err != ESP_OK)
+            {
+                ESP_LOGE("NVS", "Error (%s) geting timer_1", esp_err_to_name(err));
+            }
+            else
+            {
+                ESP_LOGI("test _1", "%d", (int)test);
+            }
+        }
 
-        ESP_ERROR_CHECK(nvs_commit(nvs_handle_timer_1));
         nvs_close(nvs_handle_timer_1);
+
         ESP_ERROR_CHECK(nvs_open("timer_2", NVS_READWRITE, &nvs_handle_timer_2));
-        ESP_ERROR_CHECK(nvs_set_u64(nvs_handle_timer_2, "TIMER_2_KEY", current_timer_2)); // Save only passwifi
+        ESP_ERROR_CHECK(nvs_set_u64(nvs_handle_timer_2, "TIMER_2_KEY", current_timer_2));
         ESP_ERROR_CHECK(nvs_commit(nvs_handle_timer_2));
         nvs_close(nvs_handle_timer_2);
         ESP_LOGI("test", "%d", (int)current_timer_1);
@@ -212,8 +220,8 @@ void option_1()
 }
 void option_2()
 {
-    gpio_isr_handler_remove(16);
-    gpio_isr_handler_add(GPIO_NUM_16, setting_isr_save, NULL);
+    gpio_isr_handler_remove(18);
+    gpio_isr_handler_add(GPIO_NUM_18, setting_isr_save, NULL);
     current_option = false;
     ESP_LOGI("Log", "Option 2");
     ESP_LOGI("Log", "Change timer Option 2");
@@ -235,25 +243,23 @@ void option(void *arg)
     }
 }
 
-void init_setting(void)
+void init_setting_timer_1_2(void)
 {
     // led_t *led = {
     //     tm1637_init(LCD_CLK_1, LCD_DTA_1),
     //     tm1637_init(LCD_CLK_2, LCD_DTA_2),
     // };
-    init_data();
-    congfi_io();
-    gpio_install_isr_service(0);
-    gpio_isr_handler_add(GPIO_NUM_16, setting_isr_handler, NULL);
+    init_data_1();
+    gpio_isr_handler_add(GPIO_NUM_18, setting_isr_handler, NULL);
     xTaskCreate(setting, "setting", 4096, NULL, 2, &task_setting);
     xTaskCreate(option, "option", 4096, NULL, 3, &toggle_option);
     xTaskCreate(increase, "increase", 4096, NULL, 4, &increase_option);
     xTaskCreate(decreased, "decreased", 4096, NULL, 5, &decreased_option);
     xTaskCreate(save_data, "save_data", 4096, NULL, 6, &save_task_setting);
 }
-void init_data()
+// function provide data not start by 0
+void init_data_1()
 {
-
     // Open NVS for timer_1
     esp_err_t err_timer_1 = nvs_open("timer_1", NVS_READONLY, &nvs_handle_timer_1);
     esp_err_t err_timer_2 = nvs_open("timer_2", NVS_READONLY, &nvs_handle_timer_2);
@@ -276,8 +282,8 @@ void init_data()
     nvs_close(nvs_handle_timer_2);
 
     // Print the timers
-    printf("Timer 1: %llu\n", current_timer_1);
-    printf("Timer 2: %llu\n", current_timer_2);
+    // printf("Timer 1: %llu\n", current_timer_1);
+    // printf("Timer 2: %llu\n", current_timer_2);
 
     // Check the validity of the timers and set up if needed
 }

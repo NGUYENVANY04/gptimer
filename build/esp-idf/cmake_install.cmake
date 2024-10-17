@@ -409,6 +409,11 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
+  include("/home/ynghia/CODE/IDF/gptimer/build/esp-idf/webserver/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
   include("/home/ynghia/CODE/IDF/gptimer/build/esp-idf/timer_handle/cmake_install.cmake")
 endif()
 
@@ -425,5 +430,10 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
   include("/home/ynghia/CODE/IDF/gptimer/build/esp-idf/function_keys/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("/home/ynghia/CODE/IDF/gptimer/build/esp-idf/handle_setting_timer_3/cmake_install.cmake")
 endif()
 
