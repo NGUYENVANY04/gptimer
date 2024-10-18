@@ -10,5 +10,10 @@ extern nvs_handle nvs_handle_timer_1;
 extern nvs_handle nvs_handle_timer_2;
 extern nvs_handle nvs_handle_timer_3;
 extern nvs_handle nvs_handle_timer_4;
+extern uint64_t timer_1;
+extern uint64_t timer_2;
+extern uint64_t timer_3;
+extern uint64_t timer_4;
+
 void handle_data();
 #endif

@@ -6,5 +6,6 @@ void setup_timer_2(uint64_t timer_2_duration_us);
 void setup_timer_3(uint64_t timer_3_duration_us);
 void setup_timer_4(uint64_t timer_3_duration_us);
 void check_flag_timer(void *par);
+void init_data_timer(void);
 
 #endif

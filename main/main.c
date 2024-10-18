@@ -46,7 +46,7 @@ void app_main(void)
     ESP_ERROR_CHECK(ret);
     congfi_io();
     handle_data();
-
+    init_data_timer();
     init_setting_timer_1_2();
     init_setting_timer_3();
     congfi_timer_4();
