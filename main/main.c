@@ -15,7 +15,6 @@
 #include "timer_handle.h"
 #define TAG "app"
 
-// Callback function to handle timer alarm event
 bool state_setting = false;
 bool start_xa_ep = false;
 void stop_services_callback(TimerHandle_t xTimer)
