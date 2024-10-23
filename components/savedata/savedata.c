@@ -3,7 +3,7 @@
 #include "esp_log.h"
 #include "display_tm1637.h"
 #include "function_keys.h"
-uint64_t timer_1 = 0, timer_2 = 0, timer_3 = 0, timer_4 = 0;
+uint64_t timer_1 = 0, timer_2 = 0, timer_3_on = 0, timer_3_off = 0, timer_4 = 0;
 nvs_handle nvs_handle_timer_1;
 nvs_handle nvs_handle_timer_2;
 nvs_handle nvs_handle_timer_3;
@@ -36,7 +36,11 @@ void handle_data()
         nvs_close(nvs_handle_timer_2);
 
         ESP_ERROR_CHECK(nvs_open("timer_3", NVS_READWRITE, &nvs_handle_timer_3));
-        ESP_ERROR_CHECK(nvs_set_u64(nvs_handle_timer_3, "TIMER_3_KEY", timer_3));
+        ESP_ERROR_CHECK(nvs_set_u64(nvs_handle_timer_3, "TIMER_3_KEY_ON", timer_3_on));
+        ESP_ERROR_CHECK(nvs_commit(nvs_handle_timer_3));
+        nvs_close(nvs_handle_timer_3);
+        ESP_ERROR_CHECK(nvs_open("timer_3", NVS_READWRITE, &nvs_handle_timer_3));
+        ESP_ERROR_CHECK(nvs_set_u64(nvs_handle_timer_3, "TIMER_3_KEY_OFF", timer_3_off));
         ESP_ERROR_CHECK(nvs_commit(nvs_handle_timer_3));
         nvs_close(nvs_handle_timer_3);
 
@@ -47,13 +51,14 @@ void handle_data()
 
         // Re-open the namespace in read-only mode
     }
+    esp_err_t err_off = nvs_get_u64(nvs_handle_timer_3, "TIMER_3_KEY_OFF", &timer_3_off);
+    esp_err_t err_on = nvs_get_u64(nvs_handle_timer_3, "TIMER_3_KEY_ON", &timer_3_on);
     nvs_close(nvs_handle_timer_1);
     nvs_close(nvs_handle_timer_2);
     nvs_close(nvs_handle_timer_3);
     nvs_close(nvs_handle_timer_4);
 
     // Print the timers
-   
 
     // Check the validity of the timers and set up if needed
     // if (err_timer_1 == ESP_OK && err_timer_2 == ESP_OK &&

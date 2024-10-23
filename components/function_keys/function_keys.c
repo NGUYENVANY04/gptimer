@@ -4,7 +4,8 @@
 
 void congfi_io(void)
 {
-
+    gpio_set_direction(GPIO_NUM_22, GPIO_MODE_INPUT);
+    gpio_set_direction(GPIO_NUM_19, GPIO_MODE_INPUT);
     gpio_config_t io_conf_isr = {
         .pin_bit_mask = (1ULL << GPIO_NUM_16 | 1ULL << GPIO_NUM_17 | 1ULL << GPIO_NUM_18 |
                          1ULL << GPIO_NUM_0 | 1ULL << GPIO_NUM_12 | 1ULL << GPIO_NUM_15),
@@ -20,6 +21,10 @@ void congfi_io(void)
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
         .intr_type = GPIO_INTR_DISABLE,
     };
+    gpio_reset_pin(GPIO_NUM_14);
+    gpio_reset_pin(GPIO_NUM_27);
+    gpio_set_direction(GPIO_NUM_14, GPIO_MODE_OUTPUT);
+    gpio_set_direction(GPIO_NUM_27, GPIO_MODE_OUTPUT);
 
     gpio_config(&io_conf_isr);
     gpio_config(&relay);

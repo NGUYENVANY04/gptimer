@@ -80,3 +80,5 @@ void tm1637_set_number_lead(tm1637_lcd_t *lcd, uint16_t number, const bool lead_
  * @param dot_mask Dot mask, bits left-to-right
  */
 void tm1637_set_number_lead_dot(tm1637_lcd_t *lcd, uint16_t number, const bool lead_zero, const uint8_t dot_mask);
+void tm1637_display_on(tm1637_lcd_t *lcd);
+void tm1637_display_off(tm1637_lcd_t *lcd);

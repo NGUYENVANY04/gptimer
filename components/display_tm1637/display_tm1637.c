@@ -186,3 +186,24 @@ void tm1637_set_number_lead_dot(tm1637_lcd_t *lcd, uint16_t number, bool lead_ze
         tm1637_set_segment_number(lcd, 0, (number / 100) % 10, dot_mask & 0x04);
     }
 }
+void tm1637_display_on(tm1637_lcd_t *lcd)
+{
+    // Xóa tất cả các digit trước khi hiển thị 'A'
+    tm1637_set_segment_raw(lcd, 0, 0x00); // Digit 0
+    tm1637_set_segment_raw(lcd, 1, 0x00); // Digit 1
+    tm1637_set_segment_raw(lcd, 2, 0x00); // Digit 2
+
+    // Hiển thị chữ 'A' ở digit 0
+    tm1637_set_segment_raw(lcd, 1, 0x3f); // A ở digit đầu tiên
+}
+
+void tm1637_display_off(tm1637_lcd_t *lcd)
+{
+    // Xóa tất cả các digit trước khi hiển thị 'B'
+    tm1637_set_segment_raw(lcd, 0, 0x00); // Digit 0
+    tm1637_set_segment_raw(lcd, 1, 0x00); // Digit 1
+    tm1637_set_segment_raw(lcd, 2, 0x00); // Digit 2
+
+    // Hiển thị chữ 'B' ở digit 0
+    tm1637_set_segment_raw(lcd, 1, 0x39); // B ở digit đầu tiên
+}
