@@ -6,6 +6,10 @@ void congfi_io(void)
 {
     gpio_set_direction(GPIO_NUM_22, GPIO_MODE_INPUT);
     gpio_set_direction(GPIO_NUM_19, GPIO_MODE_INPUT);
+    gpio_set_direction(GPIO_NUM_23, GPIO_MODE_INPUT);
+    gpio_set_direction(GPIO_NUM_34, GPIO_MODE_INPUT);
+    gpio_set_direction(GPIO_NUM_35, GPIO_MODE_INPUT);
+
     gpio_config_t io_conf_isr = {
         .pin_bit_mask = (1ULL << GPIO_NUM_16 | 1ULL << GPIO_NUM_17 | 1ULL << GPIO_NUM_18 |
                          1ULL << GPIO_NUM_0 | 1ULL << GPIO_NUM_12 | 1ULL << GPIO_NUM_15),

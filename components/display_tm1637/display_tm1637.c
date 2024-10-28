@@ -207,3 +207,9 @@ void tm1637_display_off(tm1637_lcd_t *lcd)
     // Hiển thị chữ 'B' ở digit 0
     tm1637_set_segment_raw(lcd, 1, 0x39); // B ở digit đầu tiên
 }
+void clear_tm1637(tm1637_lcd_t *lcd)
+{
+    tm1637_set_segment_raw(lcd, 0, 0x00); // B ở digit đầu tiên
+    tm1637_set_segment_raw(lcd, 1, 0x00); // B ở digit đầu tiên
+    tm1637_set_segment_raw(lcd, 2, 0x00); // B ở digit đầu tiên
+}

@@ -17,13 +17,17 @@
 #include "display_tm1637.h"
 
 #define TAG "app"
-bool flag_timer_1 = true;
+bool flag_timer_1 = false;
 bool on = true;
 bool flag_timer_2 = false;
 bool flag_timer_3 = false;
 bool restart_timer = false;
 static bool relay_on = true;
-
+gptimer_config_t timer_config = {
+    .clk_src = GPTIMER_CLK_SRC_DEFAULT,
+    .direction = GPTIMER_COUNT_UP,
+    .resolution_hz = 1000000,
+};
 gptimer_handle_t gptimer_1 = NULL; // clock 1
 gptimer_handle_t gptimer_2 = NULL; // clock  2
 gptimer_handle_t gptimer_3 = NULL; // clock  3
@@ -41,21 +45,14 @@ typedef struct
 
 static bool IRAM_ATTR handle_timer_1(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_data)
 {
-    flag_timer_2 = true; // start run timer 2
-    gpio_set_level(PIN_RELAY_1, 1);
-    gpio_set_level(PIN_RELAY_2, 1);
-    ESP_EARLY_LOGI("Check flow", "Timer 2 started , relay 1 , 2 started");
-    gptimer_del_timer(timer_1);
+    flag_timer_2 = true;
     return true;
 }
 
 static bool IRAM_ATTR handle_timer_2(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_data)
 {
-    ESP_EARLY_LOGI("Check flow", "Timer  3 started , relay 2 continiuuu, 3 started ");
-    gpio_set_level(PIN_RELAY_3, 1);
-    flag_timer_3 = true;
-    gptimer_del_timer(timer_2);
-
+    ESP_EARLY_LOGI("Check flow", "Timer relay 2, 2 stoped ");
+    restart_timer = true;
     return true;
 }
 
@@ -95,12 +92,7 @@ static bool IRAM_ATTR handle_timer_4(gptimer_handle_t timer, const gptimer_alarm
 
 void setup_timer_1(uint64_t timer_1_duration_us)
 {
-    ESP_LOGI(TAG, "Creating timer handle");
-    gptimer_config_t timer_config = {
-        .clk_src = GPTIMER_CLK_SRC_DEFAULT,
-        .direction = GPTIMER_COUNT_UP,
-        .resolution_hz = 1000000,
-    };
+    ESP_LOGI(TAG, "Creating timer 1 handle");
     ESP_ERROR_CHECK(gptimer_new_timer(&timer_config, &gptimer_1));
     gptimer_event_callbacks_t cbs = {
         .on_alarm = handle_timer_1,
@@ -117,15 +109,11 @@ void setup_timer_1(uint64_t timer_1_duration_us)
         .flags.auto_reload_on_alarm = false,
     };
     ESP_ERROR_CHECK(gptimer_set_alarm_action(gptimer_1, &alarm_config));
+    ESP_ERROR_CHECK(gptimer_start(gptimer_1));
 }
-void setup_timer_2(uint64_t timer_2_duration_us) // timer congfi by button left
+void setup_timer_2(uint64_t timer_2_duration_us)
 {
-    ESP_LOGI(TAG, "Creating timer handle");
-    gptimer_config_t timer_config = {
-        .clk_src = GPTIMER_CLK_SRC_DEFAULT,
-        .direction = GPTIMER_COUNT_UP,
-        .resolution_hz = 1000000,
-    };
+    ESP_LOGI(TAG, "Creating timer 2 handle");
     ESP_ERROR_CHECK(gptimer_new_timer(&timer_config, &gptimer_2));
     gptimer_event_callbacks_t cbs = {
         .on_alarm = handle_timer_2,
@@ -142,15 +130,11 @@ void setup_timer_2(uint64_t timer_2_duration_us) // timer congfi by button left
         .flags.auto_reload_on_alarm = false,
     };
     ESP_ERROR_CHECK(gptimer_set_alarm_action(gptimer_2, &alarm_config));
+    ESP_ERROR_CHECK(gptimer_start(gptimer_2));
 }
-void setup_timer_3(uint64_t timer_3_duration_us_on, uint64_t timer_3_duration_us_off, bool free) // timer config by button right
+void setup_timer_3(uint64_t timer_3_duration_us_on, uint64_t timer_3_duration_us_off, bool free)
 {
     ESP_LOGI(TAG, "Creating timer 3 handle");
-    gptimer_config_t timer_config = {
-        .clk_src = GPTIMER_CLK_SRC_DEFAULT,
-        .direction = GPTIMER_COUNT_UP,
-        .resolution_hz = 1000000, // Độ phân giải là 1 tick = 1µs
-    };
     ESP_ERROR_CHECK(gptimer_new_timer(&timer_config, &gptimer_3));
 
     gptimer_event_callbacks_t cbs = {
@@ -177,14 +161,9 @@ void setup_timer_3(uint64_t timer_3_duration_us_on, uint64_t timer_3_duration_us
     ESP_ERROR_CHECK(gptimer_start(gptimer_3));
 }
 
-void setup_timer_4(uint64_t timer_4_duration_us) // timer congfi by webserver
+void setup_timer_4(uint64_t timer_4_duration_us)
 {
     ESP_LOGI(TAG, "Creating timer 4 handle");
-    gptimer_config_t timer_config = {
-        .clk_src = GPTIMER_CLK_SRC_DEFAULT,
-        .direction = GPTIMER_COUNT_UP,
-        .resolution_hz = 1000000,
-    };
     ESP_ERROR_CHECK(gptimer_new_timer(&timer_config, &gptimer_4));
     gptimer_event_callbacks_t cbs = {
         .on_alarm = handle_timer_4,
@@ -211,23 +190,15 @@ void check_flag_timer(void *par)
         if (flag_timer_2)
         {
             flag_timer_2 = false;
-            ESP_LOGI(TAG, "Starting timer 2 and timer 4");
+            // gpio_set_level(PIN_RELAY_3, 1);
+            // vTaskDelay(pdMS_TO_TICKS(10000));
+            gpio_set_level(PIN_RELAY_2, 1);
             setup_timer_2(timer_2 * 60000000);
-            setup_timer_4(timer_4 * 1000000);
-            ESP_ERROR_CHECK(gptimer_start(gptimer_2));
-            ESP_ERROR_CHECK(gptimer_start(gptimer_4));
         }
-        // if (flag_timer_3)
-        // {
-        //     flag_timer_3 = false;
-        //     setup_timer_3(timer_3 * 60000000);
-        // }
-        // if (restart_timer)
-        // {
-        //     restart_timer = false;
-        //     ESP_LOGI(TAG, "Starting timer 1");
-        //     ESP_ERROR_CHECK(gptimer_start(gptimer_1));
-        // }
+        if (restart_timer)
+        {
+            esp_restart();
+        }
 
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }

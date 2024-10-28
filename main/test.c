@@ -1,245 +1,160 @@
 // #include <stdio.h>
-// #include <driver/gpio.h>
-// #include "function_keys.h"
+// #include "freertos/FreeRTOS.h"
+// #include "freertos/task.h"
+// #include "freertos/queue.h"
+// #include "driver/gptimer.h"
+// #include "esp_log.h"
+// #include <sys/time.h>
+// #include <esp_system.h>
+// #include "handle_isr.h"
 // #include "display_tm1637.h"
+// #include "function_keys.h"
 // #include "savedata.h"
+// #include "webserver.h"
 // #include "handle_setting_timer_3.h"
+// #include "timer_handle.h"
+// #define TAG "app"
 
-// uint32_t last_isr_time_3 = 0;
-// uint32_t last_countsetting_time_3 = 0;
-// TaskHandle_t task_setting_3_on = NULL;
-// TaskHandle_t increase_option_3 = NULL;
-// TaskHandle_t decreased_option_3 = NULL;
-// TaskHandle_t save_task_setting_3 = NULL;
-// TaskHandle_t task_setting_3_off = NULL;
+// bool state_system = false;
+// bool start_xa_ep = false;
+// bool option_a = false;
+// bool option_b = false;
 
-// uint64_t current_timer_3_on = 0;
-// uint64_t current_timer_3_off = 0;
-
-// uint32_t last_increase_isr_time_3 = 0;
-// uint32_t last_decrease_isr_time_3 = 0;
-
-// int count_setting_3 = 1;
-// int current_step = 1; // 1 for setting "on" time, 2 for setting "off" time
-
-// void init_data_3();
-// void IRAM_ATTR setting_isr_handler_3_on(void *arg)
+// void stop_services_callback(TimerHandle_t xTimer)
 // {
-//     uint32_t current_time = xTaskGetTickCountFromISR();
+//     ESP_LOGI("TIMER", "Stopping Wi-Fi and HTTP server...");
 
-//     if (current_time - last_isr_time_3 > DEBOUNCE_DELAY_MS / portTICK_PERIOD_MS)
+//     esp_wifi_stop();
+//     if (server != NULL)
 //     {
-//         last_isr_time_3 = current_time;
-//         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-//         vTaskNotifyGiveFromISR(task_setting_3_on, &xHigherPriorityTaskWoken);
-//         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+//         httpd_stop(server);
 //     }
-// }
-// void IRAM_ATTR setting_isr_handler_3_off(void *arg)
-// {
-//     uint32_t current_time = xTaskGetTickCountFromISR();
-
-//     if (current_time - last_isr_time_3 > DEBOUNCE_DELAY_MS / portTICK_PERIOD_MS)
-//     {
-//         last_isr_time_3 = current_time;
-//         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-//         vTaskNotifyGiveFromISR(task_setting_3_off, &xHigherPriorityTaskWoken);
-//         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-//     }
+//     ESP_LOGI("TIMER", "Services stopped.");
 // }
 
-// void IRAM_ATTR setting_isr_save_3(void *arg)
+// void check_xa_ep(void *arg)
 // {
-//     uint32_t current_time = xTaskGetTickCountFromISR();
-//     if (current_time - last_isr_time_3 > DEBOUNCE_DELAY_MS / portTICK_PERIOD_MS)
-//     {
-//         last_isr_time_3 = current_time;
-//         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-//         vTaskNotifyGiveFromISR(save_task_setting_3, &xHigherPriorityTaskWoken);
-//         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-//     }
-// }
 
-// void IRAM_ATTR increase_option_isr_handler_3(void *arg)
-// {
-//     uint32_t current_time = xTaskGetTickCountFromISR();
-//     if (current_time - last_increase_isr_time_3 > DEBOUNCE_DELAY_MS / portTICK_PERIOD_MS)
-//     {
-//         last_increase_isr_time_3 = current_time;
-//         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-//         vTaskNotifyGiveFromISR(increase_option_3, &xHigherPriorityTaskWoken);
-//         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-//     }
-// }
-
-// void IRAM_ATTR decreased_option_isr_handler_3(void *arg)
-// {
-//     uint32_t current_time = xTaskGetTickCountFromISR();
-//     if (current_time - last_decrease_isr_time_3 > DEBOUNCE_DELAY_MS / portTICK_PERIOD_MS)
-//     {
-//         last_decrease_isr_time_3 = current_time;
-//         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-//         vTaskNotifyGiveFromISR(decreased_option_3, &xHigherPriorityTaskWoken);
-//         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-//     }
-// }
-
-// void setting_3_on(void *arg)
-// {
 //     while (true)
 //     {
-//         ulTaskNotifyTake(pdTRUE, portMAX_DELAY); // Wait for notification from ISR
-//         uint32_t current_time = xTaskGetTickCountFromISR();
-//         ESP_LOGI("Log", "Setting step: %d", current_step);
+//         int state_xa_ep = gpio_get_level(GPIO_NUM_22);
+//         int state_xa_dau = gpio_get_level(GPIO_NUM_19);
+//         int state_xa_time = gpio_get_level(GPIO_NUM_23);
+//         int state_xa_temp = gpio_get_level(GPIO_NUM_34);
+//         int system_action = gpio_get_level(GPIO_NUM_35);
 
-//         if (count_setting_3 == 1)
-//         {
-//             last_countsetting_time_3 = current_time;
-//             count_setting_3 = 2;
-//         }
-//         else if (count_setting_3 == 2)
-//         {
-//             current_time = xTaskGetTickCountFromISR();
+//         ESP_LOGI("Check flow", "%d %d %d %d", state_xa_ep, state_xa_dau, state_xa_time, system_action);
+//         // if (state_xa_ep == 1 && system_action == 1)
+//         // {
+//         //     if (!start_xa_ep)
+//         //     {
+//         //         ESP_LOGI("Check flow", "option 3");
 
-//             if (current_step == 1 && current_time - last_countsetting_time_3 < 2000 / portTICK_PERIOD_MS)
+//         //         ESP_LOGI("Check flow", "Timer 3 start , relay 3  start");
+//         //         start_xa_ep = true;
+//         //         gpio_set_level(PIN_RELAY_3, 1);
+//         //         setup_timer_3(timer_3_on * 60000000, timer_3_off * 60000000, true);
+//         //     }
+//         // }
+//         // // if (state_xa_ep == 0)
+//         // // {
+//         // //     if (start_xa_ep)
+//         // //     {
+//         // //         esp_restart();
+//         // //     }
+//         // // }
+//         // if (state_xa_ep == 0 && state_xa_dau == 0 && state_xa_time == 1 && system_action == 1)
+//         // {
+//         //     if (!option_a)
+//         //     {
+//         //         ESP_LOGI("Check flow", "option 1");
+
+//         //         option_a = true;
+//         //         vTaskDelay(pdMS_TO_TICKS(5000));
+//         //         gpio_set_level(PIN_RELAY_2, 1);
+//         //         vTaskDelay(pdMS_TO_TICKS(1800));
+//         //         gpio_set_level(PIN_RELAY_2, 0);
+//         //         gpio_set_level(PIN_RELAY_3, 1);
+//         //         setup_timer_3(timer_3_on * 60000000, timer_3_off * 60000000, true);
+//         //         setup_timer_1(timer_1 * 60000000);
+//         //     }
+//         // }
+//         // if (state_xa_ep == 0 && state_xa_dau == 1 && state_xa_time == 0 && system_action == 1)
+//         // {
+//         //     if (!option_b)
+//         //     {
+//         //         ESP_LOGI("Check flow", "option 2");
+
+//         //         option_b = true;
+//         //         if (state_xa_temp == 1)
+//         //         {
+//         //             vTaskDelay(pdMS_TO_TICKS(10000));
+//         //             gpio_set_level(PIN_RELAY_3, 1);
+//         //             vTaskDelay(pdMS_TO_TICKS(10000));
+//         //             gpio_set_level(PIN_RELAY_3, 0);
+//         //             gpio_set_level(PIN_RELAY_2, 1);
+//         //             setup_timer_2(timer_2 * 60000000);
+//         //         }
+//         //     }
+//         // }
+//         if (system_action == 1)
+//         {
+//             ESP_LOGI("Check flow", "%d %d %d", state_xa_ep, state_xa_dau, state_xa_time);
+
+//             if (!state_system)
 //             {
-//                 ESP_LOGI("Option", "Enter ON timer setup");
-//                 gpio_isr_handler_remove(15);
-//                 gpio_isr_handler_add(GPIO_NUM_15, setting_isr_handler_3_off, NULL);
-//                 gpio_isr_handler_add(GPIO_NUM_0, increase_option_isr_handler_3, NULL);
-//                 gpio_isr_handler_add(GPIO_NUM_12, decreased_option_isr_handler_3, NULL);
-//                 last_countsetting_time_3 = current_time;
+//                 state_system = true;
+//                 handle_data();
+//                 init_data_timer();
+//                 init_setting_timer_1_2();
+//                 setup_3_timer();
 //             }
-//             else if (current_step == 2 && current_time - last_countsetting_time_3 < 2000 / portTICK_PERIOD_MS)
-//             {
-//                 ESP_LOGI("Option", "Enter OFF timer setup");
-//                 gpio_isr_handler_remove(15);
-//                 gpio_isr_handler_add(GPIO_NUM_15, setting_isr_save_3, NULL);
-//                 gpio_isr_handler_add(GPIO_NUM_0, increase_option_isr_handler_3, NULL);
-//                 gpio_isr_handler_add(GPIO_NUM_12, decreased_option_isr_handler_3, NULL);
-//                 last_countsetting_time_3 = current_time;
-//             }
-//             count_setting_3 = 1;
-//         }
-//     }
-// }
-
-// void setting_3_off(void *arg)
-// {
-//     tm1637_lcd_t *led3 = tm1637_init(LCD_CLK_3, LCD_DTA_3);
-
-//     while (true)
-//     {
-//         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-//         tm1637_display_off(led3);
-//         gpio_isr_handler_remove(15);
-//         gpio_isr_handler_add(GPIO_NUM_15, setting_isr_save_3, NULL);
-//     }
-// }
-// void increase_3(void *arg)
-// {
-//     tm1637_lcd_t *led3 = tm1637_init(LCD_CLK_3, LCD_DTA_3);
-
-//     while (true)
-//     {
-//         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-
-//         if (current_step == 1) // Adjusting ON time
-//         {
-//             current_timer_3_on += 1;
-//             tm1637_set_number(led3, current_timer_3_on);
-//             ESP_LOGI(" Timer3 ", "Increased ON time: %lld ms", current_timer_3_on);
-//         }
-//         else if (current_step == 2) // Adjusting OFF time
-//         {
-//             current_timer_3_off += 1;
-//             tm1637_set_number(led3, current_timer_3_off);
-//             ESP_LOGI(" Timer3 ", "Increased OFF time: %lld ms", current_timer_3_off);
-//         }
-//     }
-// }
-// void decreased_3(void *arg)
-// {
-//     tm1637_lcd_t *led3 = tm1637_init(LCD_CLK_3, LCD_DTA_3);
-
-//     while (true)
-//     {
-//         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-//         if (current_step == 1) // Adjusting ON time
-//         {
-//             if (current_timer_3_on > 0)
-//             {
-//                 current_timer_3_on -= 1;
-//             }
-//             tm1637_set_number(led3, current_timer_3_on);
-//             ESP_LOGI(" Timer3 ", "Decreased ON time: %lld ms", current_timer_3_on);
-//         }
-//         else if (current_step == 2) // Adjusting OFF time
-//         {
-//             if (current_timer_3_off > 0)
-//             {
-//                 current_timer_3_off -= 1;
-//             }
-//             tm1637_set_number(led3, current_timer_3_off);
-//             ESP_LOGI(" Timer3 ", "Decreased OFF time: %lld ms", current_timer_3_off);
-//         }
-//     }
-// }
-// void save_data_3()
-// {
-//     while (true)
-//     {
-//         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-//         ESP_ERROR_CHECK(nvs_open("timer_3", NVS_READWRITE, &nvs_handle_timer_3));
-//         esp_err_t err_on = nvs_set_u64(nvs_handle_timer_3, "TIMER_3_KEY_ON", current_timer_3_on);
-//         esp_err_t err_off = nvs_set_u64(nvs_handle_timer_3, "TIMER_3_KEY_OFF", current_timer_3_off);
-//         if (err_on != ESP_OK || err_off != ESP_OK)
-//         {
-//             ESP_LOGE("Save Error", "Failed to save timer data!");
 //         }
 //         else
 //         {
-//             ESP_LOGI("Save", "Timer data saved successfully!");
+//             if (state_system)
+//             {
+//                 tm1637_lcd_t *led1 = tm1637_init(LCD_CLK_1, LCD_DTA_1);
+//                 tm1637_lcd_t *led2 = tm1637_init(LCD_CLK_2, LCD_DTA_2);
+//                 tm1637_lcd_t *led3 = tm1637_init(LCD_CLK_3, LCD_DTA_3);
+//                 clear_tm1637(led1);
+//                 clear_tm1637(led2);
+//                 clear_tm1637(led3);
+//                 esp_restart();
+//             }
 //         }
-//         nvs_close(nvs_handle_timer_3);
-//         init_data_3();
-//         gpio_isr_handler_add(GPIO_NUM_15, setting_isr_handler_3_on, NULL);
+
+//         vTaskDelay(pdMS_TO_TICKS(1000));
 //     }
 // }
 
-// void init_data_3()
+// void app_main(void)
 // {
-//     esp_err_t err_on = nvs_get_u64(nvs_handle_timer_3, "TIMER_3_KEY_ON", &current_timer_3_on);
-//     esp_err_t err_off = nvs_get_u64(nvs_handle_timer_3, "TIMER_3_KEY_OFF", &current_timer_3_off);
-//     if (err_on != ESP_OK || err_off != ESP_OK)
+
+//     // static TimerHandle_t stop_services_timer;
+
+//     esp_err_t ret = nvs_flash_init();
+//     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
 //     {
-//         ESP_LOGE("Read Error", "Failed to read timer data!");
+//         ESP_ERROR_CHECK(nvs_flash_erase());
+//         ret = nvs_flash_init();
 //     }
-//     else
-//     {
-//         ESP_LOGI("Init Data", "Initialized ON timer: %lld ms, OFF timer: %lld ms", current_timer_3_on, current_timer_3_off);
-//     }
-// }
+//     ESP_ERROR_CHECK(ret);
+//     congfi_io();
 
-// void setup_3_timer()
-// {
-//     // Initialize GPIO pins for setting, increase, and decrease
-//     gpio_set_direction(GPIO_NUM_15, GPIO_MODE_INPUT);
-//     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
-//     gpio_set_direction(GPIO_NUM_12, GPIO_MODE_INPUT);
+//     // congfi_timer_4();
+//     // stop_services_timer = xTimerCreate("StopServicesTimer", pdMS_TO_TICKS(60000), pdFALSE, NULL, stop_services_callback);
 
-//     gpio_set_intr_type(GPIO_NUM_15, GPIO_INTR_NEGEDGE);
-//     gpio_set_intr_type(GPIO_NUM_0, GPIO_INTR_NEGEDGE);
-//     gpio_set_intr_type(GPIO_NUM_12, GPIO_INTR_NEGEDGE);
+//     // if (stop_services_timer != NULL)
+//     // {
 
-//     gpio_install_isr_service(0);
-//     gpio_isr_handler_add(GPIO_NUM_15, setting_isr_handler_3_on, NULL);
-
-//     xTaskCreate(setting_3_on, "setting_3_on", 2048, NULL, 5, &task_setting_3_on);
-//     xTaskCreate(setting_3_off, "setting_3_off", 2048, NULL, 5, &task_setting_3_off);
-//     xTaskCreate(increase_3, "increase_3", 2048, NULL, 5, &increase_option_3);
-//     xTaskCreate(decreased_3, "decreased_3", 2048, NULL, 5, &decreased_option_3);
-//     xTaskCreate(save_data_3, "save_data_3", 2048, NULL, 5, &save_task_setting_3);
-
-//     init_data_3();
+//     //     xTimerStart(stop_services_timer, 0);
+//     //     ESP_LOGI("APP", "Timer started to stop services after 2 minutes.");
+//     // }
+//     // else
+//     // {
+//     //     ESP_LOGE("APP", "Failed to create timer.");
+//     // }
+//     xTaskCreate(check_flag_timer, "check timer flag", 4096, NULL, 10, NULL);
+//     xTaskCreate(check_xa_ep, " check start system", 4096 / 2, NULL, 5, NULL);
 // }
