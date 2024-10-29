@@ -85,4 +85,5 @@ void tm1637_set_number_lead_dot(tm1637_lcd_t *lcd, uint16_t number, const bool l
 void tm1637_display_on(tm1637_lcd_t *lcd);
 void tm1637_display_off(tm1637_lcd_t *lcd);
 void clear_tm1637(tm1637_lcd_t *lcd);
+void horizontal_row(tm1637_lcd_t *lcd);
 #endif

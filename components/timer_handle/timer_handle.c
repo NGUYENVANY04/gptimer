@@ -23,15 +23,17 @@ bool flag_timer_2 = false;
 bool flag_timer_3 = false;
 bool restart_timer = false;
 static bool relay_on = true;
+static bool relay_state = true;
+
 gptimer_config_t timer_config = {
     .clk_src = GPTIMER_CLK_SRC_DEFAULT,
     .direction = GPTIMER_COUNT_UP,
     .resolution_hz = 1000000,
 };
-gptimer_handle_t gptimer_1 = NULL; // clock 1
-gptimer_handle_t gptimer_2 = NULL; // clock  2
-gptimer_handle_t gptimer_3 = NULL; // clock  3
-gptimer_handle_t gptimer_4 = NULL; // led 4 server
+gptimer_handle_t gptimer_1 = NULL;     // clock 1
+gptimer_handle_t gptimer_2 = NULL;     // clock  2
+gptimer_handle_t gptimer_3 = NULL;     // clock  3
+gptimer_handle_t gptimer_delay = NULL; // led 4 server
 
 gptimer_handle_t gptimer_stop_wifi = NULL;
 TaskHandle_t stop_task_handle = NULL;
@@ -42,6 +44,12 @@ typedef struct
     uint64_t timer_3_duration_us_on;
 
 } timer_3_callback_data_t;
+typedef struct
+{
+    uint64_t delay_1;
+    uint64_t delay_2;
+    gpio_num_t pin;
+} delay_t;
 
 static bool IRAM_ATTR handle_timer_1(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_data)
 {
@@ -81,12 +89,21 @@ static bool IRAM_ATTR handle_timer_3(gptimer_handle_t timer, const gptimer_alarm
     return true;
 }
 
-static bool IRAM_ATTR handle_timer_4(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_data)
+static bool IRAM_ATTR handle_timer_delay(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_data)
 {
-    ESP_EARLY_LOGI("Check flow", "Timer 4 stoped , relay 2  stoped");
-    gptimer_del_timer(timer_4);
+    delay_t *delay_data = (delay_t *)user_data;
+    relay_state = !relay_state;
+    gpio_set_level(delay_data->pin, relay_state);
+    ESP_EARLY_LOGI("Check flow", "Relay %s", relay_state ? "started (ON)" : "stopped (OFF)");
 
-    gpio_set_level(PIN_RELAY_2, 0);
+    gptimer_alarm_config_t alarm_config = {
+        .alarm_count = delay_data->delay_2,
+        .reload_count = 0,
+        .flags.auto_reload_on_alarm = false,
+    };
+
+    gptimer_set_alarm_action(timer, &alarm_config);
+
     return true;
 }
 
@@ -161,25 +178,29 @@ void setup_timer_3(uint64_t timer_3_duration_us_on, uint64_t timer_3_duration_us
     ESP_ERROR_CHECK(gptimer_start(gptimer_3));
 }
 
-void setup_timer_4(uint64_t timer_4_duration_us)
+void setup_timer_delay(uint64_t delay_1, uint64_t delay_2, gpio_num_t pin)
 {
-    ESP_LOGI(TAG, "Creating timer 4 handle");
-    ESP_ERROR_CHECK(gptimer_new_timer(&timer_config, &gptimer_4));
+    ESP_LOGI(TAG, "Creating timer delay handle");
+    ESP_ERROR_CHECK(gptimer_new_timer(&timer_config, &gptimer_delay));
     gptimer_event_callbacks_t cbs = {
-        .on_alarm = handle_timer_4,
+        .on_alarm = setup_timer_delay,
     };
-    ESP_ERROR_CHECK(gptimer_register_event_callbacks(gptimer_4, &cbs, NULL));
+    delay_t *delay_data = malloc(sizeof(delay_t));
+    delay_data->delay_1 = delay_1;
+    delay_data->delay_2 = delay_2;
+    delay_data->pin = pin;
+    ESP_ERROR_CHECK(gptimer_register_event_callbacks(gptimer_delay, &cbs, delay_data));
 
     ESP_LOGI(TAG, "Enabling timer");
-    ESP_ERROR_CHECK(gptimer_enable(gptimer_4));
+    ESP_ERROR_CHECK(gptimer_enable(gptimer_delay));
 
-    ESP_LOGI(TAG, "Starting timer for %llu microseconds", timer_4_duration_us);
+    ESP_LOGI(TAG, "Starting timer for %llu - %llu microseconds", delay_1, delay_2);
     gptimer_alarm_config_t alarm_config = {
-        .alarm_count = timer_4_duration_us,
+        .alarm_count = delay_1,
         .reload_count = 0,
-        .flags.auto_reload_on_alarm = false,
+        .flags.auto_reload_on_alarm = true,
     };
-    ESP_ERROR_CHECK(gptimer_set_alarm_action(gptimer_4, &alarm_config));
+    ESP_ERROR_CHECK(gptimer_set_alarm_action(gptimer_delay, &alarm_config));
 }
 
 void check_flag_timer(void *par)
@@ -190,8 +211,9 @@ void check_flag_timer(void *par)
         if (flag_timer_2)
         {
             flag_timer_2 = false;
-            // gpio_set_level(PIN_RELAY_3, 1);
-            // vTaskDelay(pdMS_TO_TICKS(10000));
+            gpio_set_level(PIN_RELAY_3, 1);
+            vTaskDelay(pdMS_TO_TICKS(10000));
+            gpio_set_level(PIN_RELAY_3, 0);
             gpio_set_level(PIN_RELAY_2, 1);
             setup_timer_2(timer_2 * 60000000);
         }

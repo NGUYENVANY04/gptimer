@@ -213,3 +213,9 @@ void clear_tm1637(tm1637_lcd_t *lcd)
     tm1637_set_segment_raw(lcd, 1, 0x00); // B ở digit đầu tiên
     tm1637_set_segment_raw(lcd, 2, 0x00); // B ở digit đầu tiên
 }
+void horizontal_row(tm1637_lcd_t *lcd)
+{
+    tm1637_set_segment_raw(lcd, 0, 0x40); // B ở digit đầu tiên
+    tm1637_set_segment_raw(lcd, 1, 0x40); // B ở digit đầu tiên
+    tm1637_set_segment_raw(lcd, 2, 0x40); // B ở digit đầu tiên
+}
