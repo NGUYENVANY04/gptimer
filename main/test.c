@@ -1,160 +1,90 @@
 // #include <stdio.h>
+// #include<string.h>
+// #include<stdlib.h>
 // #include "freertos/FreeRTOS.h"
 // #include "freertos/task.h"
-// #include "freertos/queue.h"
-// #include "driver/gptimer.h"
+// #include "driver/uart.h"
+// #include "driver/gpio.h"
+// #include "esp_timer.h"
 // #include "esp_log.h"
-// #include <sys/time.h>
-// #include <esp_system.h>
-// #include "handle_isr.h"
-// #include "display_tm1637.h"
-// #include "function_keys.h"
-// #include "savedata.h"
-// #include "webserver.h"
-// #include "handle_setting_timer_3.h"
-// #include "timer_handle.h"
-// #define TAG "app"
 
-// bool state_system = false;
-// bool start_xa_ep = false;
-// bool option_a = false;
-// bool option_b = false;
+// #define ECHO_TEST_TXD 17
+// #define ECHO_TEST_RXD 16
+// #define ECHO_TEST_RTS UART_PIN_NO_CHANGE
+// #define ECHO_TEST_CTS UART_PIN_NO_CHANGE
 
-// void stop_services_callback(TimerHandle_t xTimer)
-// {
-//     ESP_LOGI("TIMER", "Stopping Wi-Fi and HTTP server...");
+// #define ECHO_UART_PORT_NUM 2
+// #define ECHO_UART_BAUD_RATE 9600
+// #define ECHO_TASK_STACK_SIZE 30
 
-//     esp_wifi_stop();
-//     if (server != NULL)
+// #define BUF_SIZE (1024)
+
+// //Lọc dữ liệu
+// void lon_lat(char *str){
+//     //Tách lấy chuỗi $GPRMC
+//     char *token;
+//     token=strtok(str,"\n");
+//     while (token!=NULL)
 //     {
-//         httpd_stop(server);
+//         if(token[0]=='$'&&token[1]=='G'&&token[2]=='P'&&token[3]=='R'&&token[4]=='M'&&token[5]=='C'){
+//             break;
+//         }
+//         token=strtok(NULL,"\n");
 //     }
-//     ESP_LOGI("TIMER", "Services stopped.");
+//     //Tách lấy phần longitude,latitude
+//    char *tok;
+//     char latitude[20];
+//     char longitude[20];
+//     tok = strtok(token, ",");
+//     int field = 0;
+//     while (tok != NULL) {
+//         field++;
+//         if (field == 4) {
+//             strcpy(latitude, tok);
+//         }
+//         if (field == 6) {
+//             strcpy(longitude, tok);
+//         }
+//         tok = strtok(NULL, ",");
+//     }
+//     //Chuẩn hóa về độ
+//     double lon,lat;
+//     char x[10],y[10],x1[10],y1[10];
+//     lon = atof(strncpy(x, longitude, strlen(longitude) - 8)) + atof(strcpy(y, longitude + strlen(longitude) - 8))/60;
+//     lat = atof(strncpy(x1, latitude, strlen(latitude) - 8)) + atof(strcpy(y1, latitude + strlen(latitude) - 8))/60;
+//     ESP_LOGI("Longitude: ","%lf",lon);
+//     ESP_LOGI("Latitude: ","%lf",lat);
 // }
 
-// void check_xa_ep(void *arg)
+//  void init_uart2(void)
 // {
-
+//     // Config uart2
+//     uart_config_t uart_config0= {
+//         .baud_rate = ECHO_UART_BAUD_RATE,
+//         .data_bits = UART_DATA_8_BITS,
+//         .parity = UART_PARITY_DISABLE,
+//         .stop_bits = UART_STOP_BITS_1,
+//         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+//         .source_clk = UART_SCLK_DEFAULT,
+//     };
+//     uart_driver_install(ECHO_UART_PORT_NUM, BUF_SIZE * 2, 0, 0, NULL, 0);
+//     uart_param_config(ECHO_UART_PORT_NUM, &uart_config0);
+//     uart_set_pin(ECHO_UART_PORT_NUM, ECHO_TEST_TXD, ECHO_TEST_RXD, ECHO_TEST_RTS, ECHO_TEST_CTS);
+// }
+// void echo_task(void *arg){
+//     init_uart2();
+//     char *data = (char *)malloc(BUF_SIZE);
 //     while (true)
 //     {
-//         int state_xa_ep = gpio_get_level(GPIO_NUM_22);
-//         int state_xa_dau = gpio_get_level(GPIO_NUM_19);
-//         int state_xa_time = gpio_get_level(GPIO_NUM_23);
-//         int state_xa_temp = gpio_get_level(GPIO_NUM_34);
-//         int system_action = gpio_get_level(GPIO_NUM_35);
-
-//         ESP_LOGI("Check flow", "%d %d %d %d", state_xa_ep, state_xa_dau, state_xa_time, system_action);
-//         // if (state_xa_ep == 1 && system_action == 1)
-//         // {
-//         //     if (!start_xa_ep)
-//         //     {
-//         //         ESP_LOGI("Check flow", "option 3");
-
-//         //         ESP_LOGI("Check flow", "Timer 3 start , relay 3  start");
-//         //         start_xa_ep = true;
-//         //         gpio_set_level(PIN_RELAY_3, 1);
-//         //         setup_timer_3(timer_3_on * 60000000, timer_3_off * 60000000, true);
-//         //     }
-//         // }
-//         // // if (state_xa_ep == 0)
-//         // // {
-//         // //     if (start_xa_ep)
-//         // //     {
-//         // //         esp_restart();
-//         // //     }
-//         // // }
-//         // if (state_xa_ep == 0 && state_xa_dau == 0 && state_xa_time == 1 && system_action == 1)
-//         // {
-//         //     if (!option_a)
-//         //     {
-//         //         ESP_LOGI("Check flow", "option 1");
-
-//         //         option_a = true;
-//         //         vTaskDelay(pdMS_TO_TICKS(5000));
-//         //         gpio_set_level(PIN_RELAY_2, 1);
-//         //         vTaskDelay(pdMS_TO_TICKS(1800));
-//         //         gpio_set_level(PIN_RELAY_2, 0);
-//         //         gpio_set_level(PIN_RELAY_3, 1);
-//         //         setup_timer_3(timer_3_on * 60000000, timer_3_off * 60000000, true);
-//         //         setup_timer_1(timer_1 * 60000000);
-//         //     }
-//         // }
-//         // if (state_xa_ep == 0 && state_xa_dau == 1 && state_xa_time == 0 && system_action == 1)
-//         // {
-//         //     if (!option_b)
-//         //     {
-//         //         ESP_LOGI("Check flow", "option 2");
-
-//         //         option_b = true;
-//         //         if (state_xa_temp == 1)
-//         //         {
-//         //             vTaskDelay(pdMS_TO_TICKS(10000));
-//         //             gpio_set_level(PIN_RELAY_3, 1);
-//         //             vTaskDelay(pdMS_TO_TICKS(10000));
-//         //             gpio_set_level(PIN_RELAY_3, 0);
-//         //             gpio_set_level(PIN_RELAY_2, 1);
-//         //             setup_timer_2(timer_2 * 60000000);
-//         //         }
-//         //     }
-//         // }
-//         if (system_action == 1)
+//         int len = uart_read_bytes(ECHO_UART_PORT_NUM, data, (BUF_SIZE - 1), 1000 / portTICK_PERIOD_MS);
+//         if (len > 0)
 //         {
-//             ESP_LOGI("Check flow", "%d %d %d", state_xa_ep, state_xa_dau, state_xa_time);
-
-//             if (!state_system)
-//             {
-//                 state_system = true;
-//                 handle_data();
-//                 init_data_timer();
-//                 init_setting_timer_1_2();
-//                 setup_3_timer();
-//             }
+//             lon_lat(data);
 //         }
-//         else
-//         {
-//             if (state_system)
-//             {
-//                 tm1637_lcd_t *led1 = tm1637_init(LCD_CLK_1, LCD_DTA_1);
-//                 tm1637_lcd_t *led2 = tm1637_init(LCD_CLK_2, LCD_DTA_2);
-//                 tm1637_lcd_t *led3 = tm1637_init(LCD_CLK_3, LCD_DTA_3);
-//                 clear_tm1637(led1);
-//                 clear_tm1637(led2);
-//                 clear_tm1637(led3);
-//                 esp_restart();
-//             }
-//         }
-
-//         vTaskDelay(pdMS_TO_TICKS(1000));
+//         vTaskDelay(1000/portTICK_PERIOD_MS);
 //     }
 // }
-
 // void app_main(void)
 // {
-
-//     // static TimerHandle_t stop_services_timer;
-
-//     esp_err_t ret = nvs_flash_init();
-//     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
-//     {
-//         ESP_ERROR_CHECK(nvs_flash_erase());
-//         ret = nvs_flash_init();
-//     }
-//     ESP_ERROR_CHECK(ret);
-//     congfi_io();
-
-//     // congfi_timer_4();
-//     // stop_services_timer = xTimerCreate("StopServicesTimer", pdMS_TO_TICKS(60000), pdFALSE, NULL, stop_services_callback);
-
-//     // if (stop_services_timer != NULL)
-//     // {
-
-//     //     xTimerStart(stop_services_timer, 0);
-//     //     ESP_LOGI("APP", "Timer started to stop services after 2 minutes.");
-//     // }
-//     // else
-//     // {
-//     //     ESP_LOGE("APP", "Failed to create timer.");
-//     // }
-//     xTaskCreate(check_flag_timer, "check timer flag", 4096, NULL, 10, NULL);
-//     xTaskCreate(check_xa_ep, " check start system", 4096 / 2, NULL, 5, NULL);
+//     xTaskCreate(echo_task, "uart_echo_task", ECHO_TASK_STACK_SIZE*1024, NULL, 10, NULL);
 // }

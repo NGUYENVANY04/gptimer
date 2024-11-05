@@ -51,8 +51,8 @@ void handle_data()
 
         // Re-open the namespace in read-only mode
     }
-    esp_err_t err_off = nvs_get_u64(nvs_handle_timer_3, "TIMER_3_KEY_OFF", &timer_3_off);
-    esp_err_t err_on = nvs_get_u64(nvs_handle_timer_3, "TIMER_3_KEY_ON", &timer_3_on);
+    nvs_get_u64(nvs_handle_timer_3, "TIMER_3_KEY_OFF", &timer_3_off);
+    nvs_get_u64(nvs_handle_timer_3, "TIMER_3_KEY_ON", &timer_3_on);
     nvs_close(nvs_handle_timer_1);
     nvs_close(nvs_handle_timer_2);
     nvs_close(nvs_handle_timer_3);

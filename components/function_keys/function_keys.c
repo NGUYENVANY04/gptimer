@@ -4,11 +4,6 @@
 
 void congfi_io(void)
 {
-    gpio_set_direction(GPIO_NUM_22, GPIO_MODE_INPUT);
-    gpio_set_direction(GPIO_NUM_19, GPIO_MODE_INPUT);
-    gpio_set_direction(GPIO_NUM_23, GPIO_MODE_INPUT);
-    gpio_set_direction(GPIO_NUM_34, GPIO_MODE_INPUT);
-    gpio_set_direction(GPIO_NUM_35, GPIO_MODE_INPUT);
 
     gpio_config_t io_conf_isr = {
         .pin_bit_mask = (1ULL << GPIO_NUM_16 | 1ULL << GPIO_NUM_17 | 1ULL << GPIO_NUM_18 |
@@ -25,13 +20,46 @@ void congfi_io(void)
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
         .intr_type = GPIO_INTR_DISABLE,
     };
+    gpio_config_t io_conf = {
+        .pin_bit_mask = (1ULL << GPIO_NUM_19 |
+                         1ULL << GPIO_NUM_23 | 1ULL << GPIO_NUM_34 |
+                         1ULL << GPIO_NUM_35),
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE,
+    };
+    gpio_config_t io_conf_22 = {
+        .pin_bit_mask = (1ULL << GPIO_NUM_22),
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE,
+    };
     gpio_reset_pin(GPIO_NUM_14);
     gpio_reset_pin(GPIO_NUM_27);
+    gpio_reset_pin(GPIO_NUM_4);
+    gpio_reset_pin(GPIO_NUM_5);
+    gpio_reset_pin(GPIO_NUM_32);
+    gpio_reset_pin(GPIO_NUM_33);
+    // gpio_reset_pin(GPIO_NUM_19);
+    // gpio_reset_pin(GPIO_NUM_23);
+    // gpio_reset_pin(GPIO_NUM_22);
+    // gpio_reset_pin(GPIO_NUM_34);
+    // gpio_reset_pin(GPIO_NUM_35);
+
     gpio_set_direction(GPIO_NUM_14, GPIO_MODE_OUTPUT);
     gpio_set_direction(GPIO_NUM_27, GPIO_MODE_OUTPUT);
+    gpio_set_direction(GPIO_NUM_4, GPIO_MODE_OUTPUT);
+    gpio_set_direction(GPIO_NUM_5, GPIO_MODE_OUTPUT);
+    gpio_set_direction(GPIO_NUM_32, GPIO_MODE_OUTPUT);
+    gpio_set_direction(GPIO_NUM_33, GPIO_MODE_OUTPUT);
 
     gpio_config(&io_conf_isr);
     gpio_config(&relay);
+    gpio_config(&io_conf);
+    gpio_config(&io_conf_22);
+
     gpio_set_level(PIN_RELAY_1, 0);
     gpio_set_level(PIN_RELAY_2, 0);
     gpio_set_level(PIN_RELAY_3, 0);

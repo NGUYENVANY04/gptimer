@@ -53,21 +53,28 @@ typedef struct
 
 static bool IRAM_ATTR handle_timer_1(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_data)
 {
+    tm1637_lcd_t *led1 =
+        tm1637_init(LCD_CLK_1, LCD_DTA_1);
     flag_timer_2 = true;
+    tm1637_set_number(led1, 0);
     return true;
 }
 
 static bool IRAM_ATTR handle_timer_2(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_data)
 {
+    tm1637_lcd_t *led2 =
+        tm1637_init(LCD_CLK_2, LCD_DTA_2);
     ESP_EARLY_LOGI("Check flow", "Timer relay 2, 2 stoped ");
     restart_timer = true;
+    tm1637_set_number(led2, 0);
+
     return true;
 }
 
 static bool IRAM_ATTR handle_timer_3(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_data)
 {
     timer_3_callback_data_t *callback_data = (timer_3_callback_data_t *)user_data;
-
+    tm1637_lcd_t *led3 = tm1637_init(LCD_CLK_3, LCD_DTA_3);
     if (relay_on)
     {
         gpio_set_level(PIN_RELAY_3, 0);
@@ -80,12 +87,15 @@ static bool IRAM_ATTR handle_timer_3(gptimer_handle_t timer, const gptimer_alarm
         ESP_EARLY_LOGI("Check flow", "Relay 3 started (ON)");
         relay_on = true;
     }
+    tm1637_set_number(led3, relay_on ? callback_data->timer_3_duration_us_on / 60000000 : callback_data->timer_3_duration_us_off / 60000000);
 
     gptimer_alarm_config_t alarm_config = {
-        .alarm_count = edata->alarm_value + (relay_on ? callback_data->timer_3_duration_us_on : callback_data->timer_3_duration_us_off),
+        .alarm_count = (relay_on ? callback_data->timer_3_duration_us_on : callback_data->timer_3_duration_us_off),
+        .reload_count = 0,
+        .flags.auto_reload_on_alarm = true,
+
     };
     gptimer_set_alarm_action(timer, &alarm_config);
-
     return true;
 }
 
@@ -183,7 +193,7 @@ void setup_timer_delay(uint64_t delay_1, uint64_t delay_2, gpio_num_t pin)
     ESP_LOGI(TAG, "Creating timer delay handle");
     ESP_ERROR_CHECK(gptimer_new_timer(&timer_config, &gptimer_delay));
     gptimer_event_callbacks_t cbs = {
-        .on_alarm = setup_timer_delay,
+        .on_alarm = handle_timer_delay,
     };
     delay_t *delay_data = malloc(sizeof(delay_t));
     delay_data->delay_1 = delay_1;
@@ -232,7 +242,6 @@ void init_data_timer(void)
     esp_err_t err_timer_2 = nvs_open("timer_2", NVS_READONLY, &nvs_handle_timer_2);
     esp_err_t err_timer_3 = nvs_open("timer_3", NVS_READONLY, &nvs_handle_timer_3);
     esp_err_t err_timer_4 = nvs_open("timer_4", NVS_READONLY, &nvs_handle_timer_4);
-    // Read stored timer values
     err_timer_1 = nvs_get_u64(nvs_handle_timer_1, "TIMER_1_KEY", &timer_1);
     if (err_timer_1 != ESP_OK)
     {
@@ -265,15 +274,10 @@ void init_data_timer(void)
     nvs_close(nvs_handle_timer_4);
     printf("Timer 1: %llu\n", timer_1);
     printf("Timer 2: %llu\n", timer_2);
-    printf("Timer 3: %llu\n", timer_3_on);
-    printf("Timer 3: %llu\n", timer_3_off);
-
+    printf("Timer 3 on: %llu\n", timer_3_on);
+    printf("Timer 3 off: %llu\n", timer_3_off);
     printf("Timer 4: %llu\n", timer_4);
-    tm1637_lcd_t *led1 = tm1637_init(LCD_CLK_1, LCD_DTA_1);
-    tm1637_lcd_t *led2 = tm1637_init(LCD_CLK_2, LCD_DTA_2);
-    tm1637_lcd_t *led3 = tm1637_init(LCD_CLK_3, LCD_DTA_3);
-
-    tm1637_set_number(led1, timer_1);
-    tm1637_set_number(led2, timer_2);
-    tm1637_set_number(led3, timer_3_on);
+    // tm1637_lcd_t *led1 = tm1637_init(LCD_CLK_1, LCD_DTA_1);
+    // tm1637_lcd_t *led2 = tm1637_init(LCD_CLK_2, LCD_DTA_2);
+    // tm1637_lcd_t *led3 = tm1637_init(LCD_CLK_3, LCD_DTA_3);
 }
