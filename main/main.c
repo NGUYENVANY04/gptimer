@@ -21,9 +21,11 @@ bool option_a = false;
 bool option_b = false;
 bool option_c = false;
 bool option_d = false;
+bool option_e = false;
+
 bool state_xa_temp = false;
 bool previous_state_xa_temp = true;
-
+bool timer_3 = false;
 tm1637_lcd_t *led1, *led2, *led3;
 TaskHandle_t check_option_task_handle = NULL;
 
@@ -36,9 +38,9 @@ void check_option(void *arg)
             vTaskDelay(pdMS_TO_TICKS(1000));
             continue;
         }
-        int state_xa_ep = gpio_get_level(GPIO_NUM_23); // xuong la xa ep
+        int state_xa_ep = gpio_get_level(GPIO_NUM_23);
         int state_xa_dau = gpio_get_level(GPIO_NUM_19);
-        int state_temp = gpio_get_level(GPIO_NUM_22); // len la nhiet do, xuong la time
+        int state_temp = gpio_get_level(GPIO_NUM_22);
         int input = gpio_get_level(GPIO_NUM_34);
         ESP_LOGI("Check flow", "%d %d %d %d", state_xa_ep, state_xa_dau, state_temp, input);
 
@@ -49,7 +51,7 @@ void check_option(void *arg)
                 clear_tm1637(led1);
                 clear_tm1637(led2);
                 ESP_LOGI("Check flow", "led 3 va relay 3 hoat dong doc lap voi he thong");
-                option_a = option_b = option_c = option_d = true;
+                option_a = option_b = option_c = option_d = option_e = true;
                 gpio_set_level(PIN_RELAY_3, 1);
                 setup_timer_3(timer_3_on * 60000000, timer_3_off * 60000000, true);
             }
@@ -59,13 +61,13 @@ void check_option(void *arg)
             if (!option_b)
             {
                 ESP_LOGI("Check flow", "hoat dong o che do binh thuong");
-                option_a = option_b = option_c = option_d = true;
+                option_a = option_b = option_c = option_d = option_e = true;
                 vTaskDelay(pdMS_TO_TICKS(5000));
                 gpio_set_level(PIN_RELAY_2, 1);
                 vTaskDelay(pdMS_TO_TICKS(1800));
                 gpio_set_level(PIN_RELAY_2, 0);
                 gpio_set_level(PIN_RELAY_3, 1);
-                setup_timer_3(timer_3_on * 60000000, timer_3_off * 60000000, true);
+                setup_timer_3(timer_3_on * 60000000, timer_3_off * 60000000, false);
                 setup_timer_1(timer_1 * 60000000);
             }
         }
@@ -74,30 +76,57 @@ void check_option(void *arg)
             if (!option_c)
             {
                 horizontal_row(led1);
-                option_a = option_b = option_d = true;
+                option_a = option_b = option_d = option_e = true;
                 state_xa_temp = gpio_get_level(GPIO_NUM_34);
+                if (!timer_3)
+                {
+                    timer_3 = true;
+                    gpio_set_level(PIN_RELAY_3, 1);
+                    setup_timer_3(timer_3_on * 60000000, timer_3_off * 60000000, true);
+                }
                 if (state_xa_temp && !previous_state_xa_temp)
                 {
                     option_c = true;
                     ESP_LOGI("Check flow", "hoat dong o che do nhiet do");
+                    vTaskDelay(pdMS_TO_TICKS(10000));
                     gpio_set_level(PIN_RELAY_1, 1);
                     setup_timer_2(timer_2 * 60000000);
                 }
                 previous_state_xa_temp = state_xa_temp;
             }
         }
-        else if (state_xa_ep && state_xa_dau)
+        else if (state_xa_ep && state_xa_dau && !state_temp)
         {
             if (!option_d)
             {
-                ESP_LOGI("Check flow", "hoat dong o che do khong dung timer 3");
+                ESP_LOGI("Check flow", "hoat dong o che do khong dung timer 3 va thoi gian");
                 clear_tm1637(led3);
-                option_a = option_b = option_c = option_d = true;
+                option_a = option_b = option_c = option_d = option_e = true;
                 vTaskDelay(pdMS_TO_TICKS(5000));
                 gpio_set_level(PIN_RELAY_2, 1);
                 vTaskDelay(pdMS_TO_TICKS(1800));
                 gpio_set_level(PIN_RELAY_2, 0);
                 setup_timer_1(timer_1 * 60000000);
+            }
+        }
+        else if (state_xa_ep && state_xa_dau && state_temp)
+        {
+            if (!option_e)
+            {
+                state_xa_temp = gpio_get_level(GPIO_NUM_34);
+                option_a = option_b = option_c = option_d = true;
+                ESP_LOGI("Check flow", "hoat dong o che do khong dung timer 3 va nhiet do");
+                clear_tm1637(led3);
+                horizontal_row(led1);
+                if (state_xa_temp && !previous_state_xa_temp)
+                {
+                    option_e = true;
+                    ESP_LOGI("Check flow", "hoat dong o che do nhiet do");
+                    vTaskDelay(pdMS_TO_TICKS(10000));
+                    gpio_set_level(PIN_RELAY_1, 1);
+                    setup_timer_2(timer_2 * 60000000);
+                }
+                previous_state_xa_temp = state_xa_temp;
             }
         }
         else

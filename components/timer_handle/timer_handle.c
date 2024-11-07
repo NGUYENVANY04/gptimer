@@ -86,15 +86,17 @@ static bool IRAM_ATTR handle_timer_3(gptimer_handle_t timer, const gptimer_alarm
         ESP_EARLY_LOGI("Check flow", "Relay 3 started (ON)");
         relay_on = true;
     }
+
     tm1637_set_number(led3, relay_on ? callback_data->timer_3_duration_us_on / 60000000 : callback_data->timer_3_duration_us_off / 60000000);
-
-    gptimer_alarm_config_t alarm_config = {
-        .alarm_count = (relay_on ? callback_data->timer_3_duration_us_on : callback_data->timer_3_duration_us_off),
-        .reload_count = 0,
-        .flags.auto_reload_on_alarm = true,
-
-    };
-    gptimer_set_alarm_action(timer, &alarm_config);
+    if (callback_data->free)
+    {
+        gptimer_alarm_config_t alarm_config = {
+            .alarm_count = (relay_on ? callback_data->timer_3_duration_us_on : callback_data->timer_3_duration_us_off),
+            .reload_count = 0,
+            .flags.auto_reload_on_alarm = callback_data->timer_3_duration_us_on,
+        };
+        gptimer_set_alarm_action(timer, &alarm_config);
+    }
     return true;
 }
 
@@ -173,7 +175,6 @@ void setup_timer_3(uint64_t timer_3_duration_us_on, uint64_t timer_3_duration_us
     callback_data->timer_3_duration_us_off = timer_3_duration_us_off;
 
     ESP_ERROR_CHECK(gptimer_register_event_callbacks(gptimer_3, &cbs, callback_data));
-
     ESP_LOGI(TAG, "Enabling timer");
     ESP_ERROR_CHECK(gptimer_enable(gptimer_3));
 
