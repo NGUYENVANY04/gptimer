@@ -67,7 +67,6 @@ static bool IRAM_ATTR handle_timer_2(gptimer_handle_t timer, const gptimer_alarm
     ESP_EARLY_LOGI("Check flow", "Timer relay 2, 2 stoped ");
     restart_timer = true;
     tm1637_set_number(led2, 0);
-
     return true;
 }
 
@@ -224,11 +223,12 @@ void check_flag_timer(void *par)
             gpio_set_level(PIN_RELAY_3, 1);
             vTaskDelay(pdMS_TO_TICKS(10000));
             gpio_set_level(PIN_RELAY_3, 0);
-            gpio_set_level(PIN_RELAY_2, 1);
+            gpio_set_level(PIN_RELAY_1, 1);
             setup_timer_2(timer_2 * 60000000);
         }
         if (restart_timer)
         {
+            vTaskDelay(pdMS_TO_TICKS(1000));
             esp_restart();
         }
 
