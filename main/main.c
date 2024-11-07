@@ -74,19 +74,15 @@ void check_option(void *arg)
             if (!option_c)
             {
                 horizontal_row(led1);
-                option_a = option_b = option_c = option_d = true;
+                option_a = option_b = option_d = true;
                 state_xa_temp = gpio_get_level(GPIO_NUM_34);
                 if (state_xa_temp && !previous_state_xa_temp)
                 {
+                    option_c = true;
                     ESP_LOGI("Check flow", "hoat dong o che do nhiet do");
-                    vTaskDelay(pdMS_TO_TICKS(10000));
-                    gpio_set_level(PIN_RELAY_3, 1);
-                    vTaskDelay(pdMS_TO_TICKS(10000));
-                    gpio_set_level(PIN_RELAY_3, 0);
-                    gpio_set_level(PIN_RELAY_2, 1);
+                    gpio_set_level(PIN_RELAY_1, 1);
                     setup_timer_2(timer_2 * 60000000);
                 }
-
                 previous_state_xa_temp = state_xa_temp;
             }
         }
