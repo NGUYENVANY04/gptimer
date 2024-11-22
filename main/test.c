@@ -1,90 +1,198 @@
 // #include <stdio.h>
-// #include<string.h>
-// #include<stdlib.h>
+// #include "driver/gpio.h"
+// #include "esp_log.h"
+// #include "nvs_flash.h"
+// #include "nvs.h"
 // #include "freertos/FreeRTOS.h"
 // #include "freertos/task.h"
-// #include "driver/uart.h"
-// #include "driver/gpio.h"
-// #include "esp_timer.h"
-// #include "esp_log.h"
+// #include "freertos/timers.h"
 
-// #define ECHO_TEST_TXD 17
-// #define ECHO_TEST_RXD 16
-// #define ECHO_TEST_RTS UART_PIN_NO_CHANGE
-// #define ECHO_TEST_CTS UART_PIN_NO_CHANGE
+// #define GPIO_NUM_15 15 // GPIO của nút 15
+// #define DEBOUNCE_DELAY_MS 300 // Thời gian debounce cho nút nhấn
 
-// #define ECHO_UART_PORT_NUM 2
-// #define ECHO_UART_BAUD_RATE 9600
-// #define ECHO_TASK_STACK_SIZE 30
+// // Định nghĩa các giá trị option
+// bool current = true; // true = Option 1, false = Option 2
 
-// #define BUF_SIZE (1024)
+// // Biến thời gian và dữ liệu timer
+// uint64_t current_timer_3_on = 0;
+// uint64_t current_timer_3_off = 0;
+// uint32_t last_isr_time_3 = 0;
 
-// //Lọc dữ liệu
-// void lon_lat(char *str){
-//     //Tách lấy chuỗi $GPRMC
-//     char *token;
-//     token=strtok(str,"\n");
-//     while (token!=NULL)
-//     {
-//         if(token[0]=='$'&&token[1]=='G'&&token[2]=='P'&&token[3]=='R'&&token[4]=='M'&&token[5]=='C'){
-//             break;
-//         }
-//         token=strtok(NULL,"\n");
-//     }
-//     //Tách lấy phần longitude,latitude
-//    char *tok;
-//     char latitude[20];
-//     char longitude[20];
-//     tok = strtok(token, ",");
-//     int field = 0;
-//     while (tok != NULL) {
-//         field++;
-//         if (field == 4) {
-//             strcpy(latitude, tok);
-//         }
-//         if (field == 6) {
-//             strcpy(longitude, tok);
-//         }
-//         tok = strtok(NULL, ",");
-//     }
-//     //Chuẩn hóa về độ
-//     double lon,lat;
-//     char x[10],y[10],x1[10],y1[10];
-//     lon = atof(strncpy(x, longitude, strlen(longitude) - 8)) + atof(strcpy(y, longitude + strlen(longitude) - 8))/60;
-//     lat = atof(strncpy(x1, latitude, strlen(latitude) - 8)) + atof(strcpy(y1, latitude + strlen(latitude) - 8))/60;
-//     ESP_LOGI("Longitude: ","%lf",lon);
-//     ESP_LOGI("Latitude: ","%lf",lat);
-// }
+// // Các handle task và timer
+// TaskHandle_t increase_option_3 = NULL;
+// TaskHandle_t decreased_option_3 = NULL;
+// TaskHandle_t toggle = NULL;
+// TaskHandle_t save_task_setting_3 = NULL;
+// TimerHandle_t auto_save_timer;
 
-//  void init_uart2(void)
+// // Hàm lưu dữ liệu
+// void save_data_3()
 // {
-//     // Config uart2
-//     uart_config_t uart_config0= {
-//         .baud_rate = ECHO_UART_BAUD_RATE,
-//         .data_bits = UART_DATA_8_BITS,
-//         .parity = UART_PARITY_DISABLE,
-//         .stop_bits = UART_STOP_BITS_1,
-//         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-//         .source_clk = UART_SCLK_DEFAULT,
-//     };
-//     uart_driver_install(ECHO_UART_PORT_NUM, BUF_SIZE * 2, 0, 0, NULL, 0);
-//     uart_param_config(ECHO_UART_PORT_NUM, &uart_config0);
-//     uart_set_pin(ECHO_UART_PORT_NUM, ECHO_TEST_TXD, ECHO_TEST_RXD, ECHO_TEST_RTS, ECHO_TEST_CTS);
+//     ESP_LOGI("Save", "Saving timer data...");
+
+//     nvs_handle nvs_handle_timer_3;
+//     ESP_ERROR_CHECK(nvs_open("timer_3", NVS_READWRITE, &nvs_handle_timer_3));
+
+//     esp_err_t err_on = nvs_set_u64(nvs_handle_timer_3, "TIMER_3_KEY_ON", current_timer_3_on);
+//     esp_err_t err_off = nvs_set_u64(nvs_handle_timer_3, "TIMER_3_KEY_OFF", current_timer_3_off);
+
+//     if (err_on != ESP_OK || err_off != ESP_OK)
+//     {
+//         ESP_LOGE("Save Error", "Failed to save timer data!");
+//     }
+//     else
+//     {
+//         ESP_LOGI("Save", "Timer data saved successfully!");
+//     }
+
+//     ESP_ERROR_CHECK(nvs_commit(nvs_handle_timer_3));
+//     nvs_close(nvs_handle_timer_3);
 // }
-// void echo_task(void *arg){
-//     init_uart2();
-//     char *data = (char *)malloc(BUF_SIZE);
+
+// // Hàm callback tự động lưu sau 5 giây không thao tác
+// void auto_save_timer_callback(TimerHandle_t xTimer)
+// {
+//     // Gọi hàm lưu dữ liệu sau 5 giây không có thao tác
+//     save_data_3();
+//     ESP_LOGI("Auto Save", "Data saved automatically after 5 seconds of inactivity.");
+// }
+
+// // Hàm tăng giá trị cho option 1 hoặc 2
+// void increase_3(void *arg)
+// {
 //     while (true)
 //     {
-//         int len = uart_read_bytes(ECHO_UART_PORT_NUM, data, (BUF_SIZE - 1), 1000 / portTICK_PERIOD_MS);
-//         if (len > 0)
+//         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+//         if (current)
 //         {
-//             lon_lat(data);
+//             current_timer_3_on += 1;
+//             ESP_LOGI("Option 1", "Increased time: %lld ms", current_timer_3_on);
+//             tm1637_set_number(led3, current_timer_3_on);
 //         }
-//         vTaskDelay(1000/portTICK_PERIOD_MS);
+//         else
+//         {
+//             current_timer_3_off += 1;
+//             ESP_LOGI("Option 2", "Increased time: %lld ms", current_timer_3_off);
+//             tm1637_set_number(led3, current_timer_3_off);
+//         }
+
+//         // Reset timer sau mỗi thao tác tăng giảm
+//         last_isr_time_3 = xTaskGetTickCount();
+//         xTimerReset(auto_save_timer, 0);
 //     }
 // }
+
+// // Hàm giảm giá trị cho option 1 hoặc 2
+// void decreased_3(void *arg)
+// {
+//     while (true)
+//     {
+//         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+//         if (current)
+//         {
+//             if (current_timer_3_on >= 1)
+//             {
+//                 current_timer_3_on -= 1;
+//                 ESP_LOGI("Option 1", "Decreased time: %lld ms", current_timer_3_on);
+//                 tm1637_set_number(led3, current_timer_3_on);
+//             }
+//         }
+//         else
+//         {
+//             if (current_timer_3_off >= 1)
+//             {
+//                 current_timer_3_off -= 1;
+//                 ESP_LOGI("Option 2", "Decreased time: %lld ms", current_timer_3_off);
+//                 tm1637_set_number(led3, current_timer_3_off);
+//             }
+//         }
+
+//         // Reset timer sau mỗi thao tác tăng giảm
+//         last_isr_time_3 = xTaskGetTickCount();
+//         xTimerReset(auto_save_timer, 0);
+//     }
+// }
+
+// // Hàm xử lý ngắt cho nút 15 (Toggle giữa 2 option)
+// void IRAM_ATTR setting_isr_handler_3_on(void *arg)
+// {
+//     uint32_t current_time = xTaskGetTickCountFromISR();
+
+//     // Kiểm tra thời gian debounce
+//     if (current_time - last_isr_time_3 > DEBOUNCE_DELAY_MS / portTICK_PERIOD_MS)
+//     {
+//         last_isr_time_3 = current_time;
+//         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+//         // Toggle trạng thái current
+//         current = !current;
+
+//         // Cập nhật Option mới
+//         if (current)
+//         {
+//             ESP_LOGI("Option", "Switched to Option 1");
+//         }
+//         else
+//         {
+//             ESP_LOGI("Option", "Switched to Option 2");
+//         }
+
+//         vTaskNotifyGiveFromISR(toggle, &xHigherPriorityTaskWoken);
+//         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+//     }
+// }
+
+// // Hàm khởi tạo dữ liệu ban đầu cho timer
+// void init_data_3()
+// {
+//     // Lấy dữ liệu từ NVS
+//     nvs_handle nvs_handle_timer_3;
+//     ESP_ERROR_CHECK(nvs_open("timer_3", NVS_READWRITE, &nvs_handle_timer_3));
+
+//     esp_err_t err_on = nvs_get_u64(nvs_handle_timer_3, "TIMER_3_KEY_ON", &current_timer_3_on);
+//     esp_err_t err_off = nvs_get_u64(nvs_handle_timer_3, "TIMER_3_KEY_OFF", &current_timer_3_off);
+
+//     if (err_on != ESP_OK || err_off != ESP_OK)
+//     {
+//         ESP_LOGW("Init", "Failed to load timer data, using default values.");
+//         current_timer_3_on = 0;
+//         current_timer_3_off = 0;
+//     }
+//     else
+//     {
+//         ESP_LOGI("Init", "Loaded timer data successfully.");
+//     }
+
+//     nvs_close(nvs_handle_timer_3);
+// }
+
+// // Hàm cấu hình hệ thống
+// void setup_3_timer(void)
+// {
+//     init_data_3();
+//     tm1637_set_number(led3, current_timer_3_on);
+
+//     // Tạo timer tự động lưu sau 5 giây
+//     auto_save_timer = xTimerCreate("AutoSaveTimer", pdMS_TO_TICKS(5000), pdFALSE, (void *)0, auto_save_timer_callback);
+
+//     // Tạo task xử lý tăng giảm thời gian
+//     xTaskCreate(increase_3, "increase", 4096, NULL, 4, &increase_option_3);
+//     xTaskCreate(decreased_3, "decreased", 4096, NULL, 5, &decreased_option_3);
+//     xTaskCreate(save_data_3, "save_data", 4096, NULL, 6, &save_task_setting_3);
+
+//     // Cấu hình ngắt cho nút 15 (Toggle giữa 2 option)
+//     gpio_isr_handler_add(GPIO_NUM_15, setting_isr_handler_3_on, NULL);
+//     xTaskCreate(option_current, "option", 4096, NULL, 3, &toggle);
+// }
+
+// // Hàm chính
 // void app_main(void)
 // {
-//     xTaskCreate(echo_task, "uart_echo_task", ECHO_TASK_STACK_SIZE*1024, NULL, 10, NULL);
+//     // Khởi tạo NVS
+//     ESP_ERROR_CHECK(nvs_flash_init());
+
+//     // Cấu hình hệ thống
+//     setup_3_timer();
 // }

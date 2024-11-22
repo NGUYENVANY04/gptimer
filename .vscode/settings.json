@@ -50,7 +50,10 @@
     "type_traits": "c",
     "param.h": "c",
     "webserver.h": "c",
-    "stdint.h": "c"
+    "stdint.h": "c",
+    "atomic": "cpp",
+    "chrono": "cpp",
+    "random": "cpp"
   },
   "idf.adapterTargetName": "esp32",
   "idf.openOcdConfigs": [

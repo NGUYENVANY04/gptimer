@@ -4,6 +4,9 @@
 #include "display_tm1637.h"
 #include "savedata.h"
 #include "handle_setting_timer_3.h"
+#include "timer_handle.h"
+#include "freertos/timers.h"
+
 uint32_t last_isr_time_3 = 0;
 uint32_t last_countsetting_time_3 = 0;
 TaskHandle_t task_setting_3_on = NULL;
@@ -12,6 +15,7 @@ TaskHandle_t decreased_option_3 = NULL;
 TaskHandle_t save_task_setting_3 = NULL;
 TaskHandle_t task_setting_3_off = NULL;
 TaskHandle_t toggle = NULL;
+TimerHandle_t auto_save_timer;
 
 uint64_t current_timer_3_on = 0;
 uint64_t current_timer_3_off = 0;
@@ -98,7 +102,6 @@ void IRAM_ATTR decreased_option_isr_handler_3(void *arg)
 
 void setting_3_on(void *arg)
 {
-    tm1637_lcd_t *led3 = tm1637_init(LCD_CLK_3, LCD_DTA_3);
     while (true)
     {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY); // Wait for notification from ISR
@@ -119,8 +122,8 @@ void setting_3_on(void *arg)
                 ESP_LOGI("Option", "Interrupt detected, go option");
                 gpio_isr_handler_remove(15);
                 gpio_isr_handler_add(GPIO_NUM_15, option_isr_handler_3, NULL);
-                gpio_isr_handler_add(GPIO_NUM_0, increase_option_isr_handler_3, NULL);
-                gpio_isr_handler_add(GPIO_NUM_12, decreased_option_isr_handler_3, NULL);
+                gpio_isr_handler_add(BTU2, increase_option_isr_handler_3, NULL);
+                gpio_isr_handler_add(BTD2, decreased_option_isr_handler_3, NULL);
                 last_countsetting_time_3 = current_time;
                 current = true;
             }
@@ -130,16 +133,16 @@ void setting_3_on(void *arg)
 }
 void option_on()
 {
+    tm1637_display_on(led3);
     current = true;
     ESP_LOGI("Log", "Option 1");
     ESP_LOGI("Log", "Change timer on ");
 }
 void option_off()
 {
-    tm1637_lcd_t *led3 = tm1637_init(LCD_CLK_3, LCD_DTA_3);
     tm1637_display_off(led3);
-    gpio_isr_handler_remove(15);
-    gpio_isr_handler_add(GPIO_NUM_15, setting_isr_save_3, NULL);
+    // gpio_isr_handler_remove(15);
+    // gpio_isr_handler_add(GPIO_NUM_15, setting_isr_save_3, NULL);
     current = false;
     ESP_LOGI("Log", "Option 2");
     ESP_LOGI("Log", "Change timer Off");
@@ -175,7 +178,6 @@ void option_current(void *arg)
 // }
 void increase_3(void *arg)
 {
-    tm1637_lcd_t *led3 = tm1637_init(LCD_CLK_3, LCD_DTA_3);
 
     while (true)
     {
@@ -184,6 +186,14 @@ void increase_3(void *arg)
         {
             current_timer_3_on += 1;
             ESP_LOGI("Option 1", "Increased time: %lld ms", current_timer_3_on);
+            for (int i = 0; i < 5; i++)
+            {
+                tm1637_set_number(led3, current_timer_3_on);
+                vTaskDelay(pdMS_TO_TICKS(100));
+
+                clear_tm1637(led3);
+                vTaskDelay(pdMS_TO_TICKS(100));
+            }
             tm1637_set_number(led3, current_timer_3_on);
         }
         else
@@ -191,13 +201,21 @@ void increase_3(void *arg)
 
             current_timer_3_off += 1;
             ESP_LOGI("Option 2", "Increased time: %lld ms", current_timer_3_off);
+            for (int i = 0; i < 5; i++)
+            {
+                tm1637_set_number(led3, current_timer_3_off);
+                vTaskDelay(pdMS_TO_TICKS(100));
+
+                clear_tm1637(led3);
+                vTaskDelay(pdMS_TO_TICKS(100));
+            }
             tm1637_set_number(led3, current_timer_3_off);
         }
+        xTimerReset(auto_save_timer, 0);
     }
 }
 void decreased_3(void *arg)
 {
-    tm1637_lcd_t *led3 = tm1637_init(LCD_CLK_3, LCD_DTA_3);
 
     while (true)
     {
@@ -208,6 +226,14 @@ void decreased_3(void *arg)
             {
                 current_timer_3_on -= 1;
                 ESP_LOGI("Option 1", "Decreased time: %lld ms", current_timer_3_on);
+                for (int i = 0; i < 5; i++)
+                {
+                    tm1637_set_number(led3, current_timer_3_on);
+                    vTaskDelay(pdMS_TO_TICKS(100));
+
+                    clear_tm1637(led3);
+                    vTaskDelay(pdMS_TO_TICKS(100));
+                }
                 tm1637_set_number(led3, current_timer_3_on);
             }
         }
@@ -217,43 +243,54 @@ void decreased_3(void *arg)
             {
                 current_timer_3_off -= 1;
                 ESP_LOGI("Option 2", "Decreased time: %lld ms", current_timer_3_off);
+                for (int i = 0; i < 5; i++)
+                {
+                    tm1637_set_number(led3, current_timer_3_off);
+                    vTaskDelay(pdMS_TO_TICKS(100));
+                    clear_tm1637(led3);
+                    vTaskDelay(pdMS_TO_TICKS(100));
+                }
                 tm1637_set_number(led3, current_timer_3_off);
             }
         }
+        xTimerReset(auto_save_timer, 0);
     }
+}
+void save_data_3();
+
+void auto_save_timer_callback(TimerHandle_t xTimer)
+{
+    // Gọi hàm lưu dữ liệu sau 5 giây không có thao tác
+    save_data_3();
+    ESP_LOGI("Auto Save", "Data saved automatically after 5 seconds of inactivity.");
 }
 void save_data_3()
 {
-    while (true)
+    ESP_ERROR_CHECK(nvs_open("timer_3", NVS_READWRITE, &nvs_handle_timer_3));
+    esp_err_t err_on = nvs_set_u64(nvs_handle_timer_3, "TIMER_3_KEY_ON", current_timer_3_on);
+    esp_err_t err_off = nvs_set_u64(nvs_handle_timer_3, "TIMER_3_KEY_OFF", current_timer_3_off);
+    if (err_on != ESP_OK || err_off != ESP_OK)
     {
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        ESP_ERROR_CHECK(nvs_open("timer_3", NVS_READWRITE, &nvs_handle_timer_3));
-        esp_err_t err_on = nvs_set_u64(nvs_handle_timer_3, "TIMER_3_KEY_ON", current_timer_3_on);
-        esp_err_t err_off = nvs_set_u64(nvs_handle_timer_3, "TIMER_3_KEY_OFF", current_timer_3_off);
-        if (err_on != ESP_OK || err_off != ESP_OK)
-        {
-            ESP_LOGE("Save Error", "Failed to save timer data!");
-        }
-        else
-        {
-            ESP_LOGI("Save", "Timer data saved successfully!");
-        }
-        ESP_ERROR_CHECK(nvs_commit(nvs_handle_timer_3));
-        nvs_close(nvs_handle_timer_3);
-        esp_restart();
+        ESP_LOGE("Save Error", "Failed to save timer data!");
     }
+    else
+    {
+        ESP_LOGI("Save", "Timer data saved successfully!");
+    }
+    ESP_ERROR_CHECK(nvs_commit(nvs_handle_timer_3));
+    nvs_close(nvs_handle_timer_3);
+    esp_restart();
 }
 void setup_3_timer(void)
 {
     init_data_3();
-    tm1637_lcd_t *led3 = tm1637_init(LCD_CLK_3, LCD_DTA_3);
     tm1637_set_number(led3, current_timer_3_on);
-
+    auto_save_timer = xTimerCreate("AutoSaveTimer", pdMS_TO_TICKS(5000), pdFALSE, (void *)0, auto_save_timer_callback);
     gpio_isr_handler_add(GPIO_NUM_15, setting_isr_handler_3_on, NULL);
     xTaskCreate(setting_3_on, "setting", 4096, NULL, 2, &task_setting_3_on);
     xTaskCreate(increase_3, "increase", 4096, NULL, 4, &increase_option_3);
     xTaskCreate(decreased_3, "decreased", 4096, NULL, 5, &decreased_option_3);
-    xTaskCreate(save_data_3, "save_data", 4096, NULL, 6, &save_task_setting_3);
+    // xTaskCreate(save_data_3, "save_data", 4096, NULL, 6, &save_task_setting_3);
     xTaskCreate(option_current, "option", 4096, NULL, 3, &toggle);
 }
 void init_data_3()

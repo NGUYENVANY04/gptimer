@@ -19,5 +19,11 @@
 #define PIN_RELAY_2 21 // server
 #define PIN_RELAY_3 2  // clock 3
 
+#define BTU1 GPIO_NUM_17
+#define BTD1 GPIO_NUM_16
+#define BTU2 GPIO_NUM_12
+#define BTD2 GPIO_NUM_0
+extern bool relay_1, relay_3;
+
 extern void congfi_io();
 #endif // FUNCTION_KEYS_H

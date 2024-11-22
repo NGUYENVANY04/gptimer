@@ -86,4 +86,5 @@ void tm1637_display_on(tm1637_lcd_t *lcd);
 void tm1637_display_off(tm1637_lcd_t *lcd);
 void clear_tm1637(tm1637_lcd_t *lcd);
 void horizontal_row(tm1637_lcd_t *lcd);
+
 #endif
