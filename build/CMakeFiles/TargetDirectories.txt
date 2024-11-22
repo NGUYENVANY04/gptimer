@@ -621,6 +621,13 @@
 /home/ynghia/CODE/IDF/gptimer/build/esp-idf/main/CMakeFiles/rebuild_cache.dir
 /home/ynghia/CODE/IDF/gptimer/build/esp-idf/main/CMakeFiles/edit_cache.dir
 /home/ynghia/CODE/IDF/gptimer/build/esp-idf/main/CMakeFiles/__idf_main.dir
+/home/ynghia/CODE/IDF/gptimer/build/esp-idf/common/CMakeFiles/install/strip.dir
+/home/ynghia/CODE/IDF/gptimer/build/esp-idf/common/CMakeFiles/install/local.dir
+/home/ynghia/CODE/IDF/gptimer/build/esp-idf/common/CMakeFiles/install.dir
+/home/ynghia/CODE/IDF/gptimer/build/esp-idf/common/CMakeFiles/list_install_components.dir
+/home/ynghia/CODE/IDF/gptimer/build/esp-idf/common/CMakeFiles/rebuild_cache.dir
+/home/ynghia/CODE/IDF/gptimer/build/esp-idf/common/CMakeFiles/edit_cache.dir
+/home/ynghia/CODE/IDF/gptimer/build/esp-idf/common/CMakeFiles/__idf_common.dir
 /home/ynghia/CODE/IDF/gptimer/build/esp-idf/display_tm1637/CMakeFiles/install/strip.dir
 /home/ynghia/CODE/IDF/gptimer/build/esp-idf/display_tm1637/CMakeFiles/install/local.dir
 /home/ynghia/CODE/IDF/gptimer/build/esp-idf/display_tm1637/CMakeFiles/install.dir

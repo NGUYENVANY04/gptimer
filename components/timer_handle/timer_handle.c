@@ -40,6 +40,9 @@ typedef struct
     bool free;
     uint64_t timer_3_duration_us_off;
     uint64_t timer_3_duration_us_on;
+    int current_timer_on;
+    int current_timer_off;
+
 } timer_callback_data_t;
 typedef struct
 {
@@ -98,32 +101,52 @@ static bool IRAM_ATTR handle_timer_2(gptimer_handle_t timer, const gptimer_alarm
 static bool IRAM_ATTR handle_timer_3(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_data)
 {
     timer_callback_data_t *callback_data = (timer_callback_data_t *)user_data;
+
     if (relay_3)
     {
-        gpio_set_level(PIN_RELAY_3, 0);
-        relay_3 = false;
-        ESP_EARLY_LOGI("Check flow", "Relay 3 stopped (OFF)");
+        callback_data->current_timer_on--;
+        tm1637_set_number(led3, callback_data->current_timer_on);
+        ESP_EARLY_LOGI("Check flow", "Relay 3 started (ON) %d", callback_data->current_timer_on);
+
+        if (!callback_data->current_timer_on)
+        {
+            gpio_set_level(PIN_RELAY_3, 0);
+            relay_3 = false;
+            ESP_EARLY_LOGI("Check flow", "Relay 3 stopped (OFF)");
+            if (!callback_data->free)
+            {
+                gptimer_stop(gptimer_3);
+            }
+        }
     }
     else
     {
-        if (!relay_1)
+        if (callback_data->current_timer_off--)
+        {
+            tm1637_set_number(led3, callback_data->current_timer_off);
+        }
+        ESP_EARLY_LOGI("Check flow", "Relay 3 started (OFF) %d", callback_data->current_timer_off);
+        if (!relay_1 && !callback_data->current_timer_off)
         {
             gpio_set_level(PIN_RELAY_3, 1);
             relay_3 = true;
             ESP_EARLY_LOGI("Check flow", "Relay 3 started (ON)");
+            callback_data->current_timer_on = callback_data->timer_3_duration_us_on / 60000000;
+            callback_data->current_timer_off = callback_data->timer_3_duration_us_off / 60000000;
         }
     }
-    relay_on = gpio_get_level(PIN_RELAY_3);
-    tm1637_set_number(led3, relay_on ? callback_data->timer_3_duration_us_on / 60000000 : callback_data->timer_3_duration_us_off / 60000000);
-    if (callback_data->free)
-    {
-        gptimer_alarm_config_t alarm_config = {
-            .alarm_count = (relay_on ? callback_data->timer_3_duration_us_on : callback_data->timer_3_duration_us_off),
-            .reload_count = 0,
-            .flags.auto_reload_on_alarm = true,
-        };
-        gptimer_set_alarm_action(timer, &alarm_config);
-    }
+
+    // relay_on = gpio_get_level(PIN_RELAY_3);
+    // tm1637_set_number(led3, relay_on ? callback_data->timer_3_duration_us_on / 60000000 : callback_data->timer_3_duration_us_off / 60000000);
+    // if (callback_data->free)
+    // {
+    //     gptimer_alarm_config_t alarm_config = {
+    //         .alarm_count = (relay_on ? callback_data->timer_3_duration_us_on : callback_data->timer_3_duration_us_off),
+    //         .reload_count = 0,
+    //         .flags.auto_reload_on_alarm = true,
+    //     };
+    //     gptimer_set_alarm_action(timer, &alarm_config);
+    // }
     return true;
 }
 
@@ -189,6 +212,8 @@ void setup_timer_3(uint64_t timer_3_duration_us_on, uint64_t timer_3_duration_us
     callback_data->free = free;
     callback_data->timer_3_duration_us_on = timer_3_duration_us_on;
     callback_data->timer_3_duration_us_off = timer_3_duration_us_off;
+    callback_data->current_timer_off = (int)timer_3_duration_us_off / 60000000;
+    callback_data->current_timer_on = (int)timer_3_duration_us_on / 60000000;
 
     ESP_ERROR_CHECK(gptimer_register_event_callbacks(gptimer_3, &cbs, callback_data));
     ESP_LOGI(TAG, "Enabling timer");
@@ -196,9 +221,9 @@ void setup_timer_3(uint64_t timer_3_duration_us_on, uint64_t timer_3_duration_us
 
     ESP_LOGI(TAG, "Starting timer for %llu microseconds (ON phase)", timer_3_duration_us_on);
     gptimer_alarm_config_t alarm_config = {
-        .alarm_count = timer_3_duration_us_on,
+        .alarm_count = 60000000,
         .reload_count = 0,
-        .flags.auto_reload_on_alarm = free,
+        .flags.auto_reload_on_alarm = true,
     };
     ESP_ERROR_CHECK(gptimer_set_alarm_action(gptimer_3, &alarm_config));
     ESP_ERROR_CHECK(gptimer_start(gptimer_3));
