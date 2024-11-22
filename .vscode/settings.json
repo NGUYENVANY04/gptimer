@@ -53,7 +53,8 @@
     "stdint.h": "c",
     "atomic": "cpp",
     "chrono": "cpp",
-    "random": "cpp"
+    "random": "cpp",
+    "stdbool.h": "c"
   },
   "idf.adapterTargetName": "esp32",
   "idf.openOcdConfigs": [

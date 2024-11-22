@@ -23,6 +23,10 @@ bool flag_timer_2 = false;
 bool flag_timer_3 = false;
 bool restart_timer = false;
 bool relay_on = true;
+bool state_timer_1 = false;
+bool state_timer_2 = false;
+bool state_timer_3 = false;
+
 gptimer_config_t timer_config = {
     .clk_src = GPTIMER_CLK_SRC_DEFAULT,
     .direction = GPTIMER_COUNT_UP,
@@ -172,7 +176,7 @@ void setup_timer_1(uint64_t timer_1_duration_us)
         .flags.auto_reload_on_alarm = timer_1_duration_us > 60000000,
     };
     ESP_ERROR_CHECK(gptimer_set_alarm_action(gptimer_1, &alarm_config));
-    ESP_ERROR_CHECK(gptimer_start(gptimer_1));
+    state_timer_1 = gptimer_start(gptimer_1);
 }
 void setup_timer_2(uint64_t timer_2_duration_us)
 {
@@ -197,7 +201,7 @@ void setup_timer_2(uint64_t timer_2_duration_us)
         .flags.auto_reload_on_alarm = timer_2_duration_us > 60000000,
     };
     ESP_ERROR_CHECK(gptimer_set_alarm_action(gptimer_2, &alarm_config));
-    ESP_ERROR_CHECK(gptimer_start(gptimer_2));
+    state_timer_2 = gptimer_start(gptimer_2);
 }
 void setup_timer_3(uint64_t timer_3_duration_us_on, uint64_t timer_3_duration_us_off, bool free)
 {
@@ -226,7 +230,7 @@ void setup_timer_3(uint64_t timer_3_duration_us_on, uint64_t timer_3_duration_us
         .flags.auto_reload_on_alarm = true,
     };
     ESP_ERROR_CHECK(gptimer_set_alarm_action(gptimer_3, &alarm_config));
-    ESP_ERROR_CHECK(gptimer_start(gptimer_3));
+    state_timer_3 = gptimer_start(gptimer_3);
 }
 
 void check_flag_timer(void *par)
