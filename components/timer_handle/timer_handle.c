@@ -177,6 +177,7 @@ void setup_timer_1(uint64_t timer_1_duration_us)
     };
     ESP_ERROR_CHECK(gptimer_set_alarm_action(gptimer_1, &alarm_config));
     state_timer_1 = gptimer_start(gptimer_1);
+    // ESP_ERROR_CHECK(gptimer_start(gptimer_1));
 }
 void setup_timer_2(uint64_t timer_2_duration_us)
 {
