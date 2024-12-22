@@ -8,6 +8,9 @@ nvs_handle nvs_handle_timer_1;
 nvs_handle nvs_handle_timer_2;
 nvs_handle nvs_handle_timer_3;
 nvs_handle nvs_handle_timer_4;
+nvs_handle startup_handle;
+
+int8_t status = 0;
 
 void handle_data()
 {
@@ -15,9 +18,9 @@ void handle_data()
     esp_err_t err_timer_1 = nvs_open("timer_1", NVS_READONLY, &nvs_handle_timer_1);
     esp_err_t err_timer_2 = nvs_open("timer_2", NVS_READONLY, &nvs_handle_timer_2);
     esp_err_t err_timer_3 = nvs_open("timer_3", NVS_READONLY, &nvs_handle_timer_3);
-    esp_err_t err_timer_4 = nvs_open("timer_4", NVS_READONLY, &nvs_handle_timer_4);
+    esp_err_t err_startup = nvs_open("startup", NVS_READONLY, &startup_handle);
     if (err_timer_1 == ESP_ERR_NVS_NOT_FOUND || err_timer_2 == ESP_ERR_NVS_NOT_FOUND ||
-        err_timer_3 == ESP_ERR_NVS_NOT_FOUND || err_timer_4 == ESP_ERR_NVS_NOT_FOUND)
+        err_timer_3 == ESP_ERR_NVS_NOT_FOUND || err_startup == ESP_ERR_NVS_NOT_FOUND)
     {
 
         // Namespace does not exist, create it with default values
@@ -44,19 +47,21 @@ void handle_data()
         ESP_ERROR_CHECK(nvs_commit(nvs_handle_timer_3));
         nvs_close(nvs_handle_timer_3);
 
-        ESP_ERROR_CHECK(nvs_open("timer_4", NVS_READWRITE, &nvs_handle_timer_4));
-        ESP_ERROR_CHECK(nvs_set_u64(nvs_handle_timer_4, "TIMER_4_KEY", timer_4));
-        ESP_ERROR_CHECK(nvs_commit(nvs_handle_timer_4));
-        nvs_close(nvs_handle_timer_4);
+        ESP_ERROR_CHECK(nvs_open("startup", NVS_READWRITE, &startup_handle));
+        ESP_ERROR_CHECK(nvs_set_i8(startup_handle, "status", status));
+        ESP_ERROR_CHECK(nvs_commit(startup_handle));
+        nvs_close(startup_handle);
 
         // Re-open the namespace in read-only mode
     }
     nvs_get_u64(nvs_handle_timer_3, "TIMER_3_KEY_OFF", &timer_3_off);
     nvs_get_u64(nvs_handle_timer_3, "TIMER_3_KEY_ON", &timer_3_on);
+    nvs_get_i8(startup_handle, "status", &status);
+
     nvs_close(nvs_handle_timer_1);
     nvs_close(nvs_handle_timer_2);
     nvs_close(nvs_handle_timer_3);
-    nvs_close(nvs_handle_timer_4);
+    nvs_close(startup_handle);
 
     // Print the timers
 

@@ -5,7 +5,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/portmacro.h"
-#define DEBOUNCE_DELAY_MS 200
+#define DEBOUNCE_DELAY_MS 100
 #define LCD_CLK_1 4
 #define LCD_DTA_1 5 // TIMER 1
 

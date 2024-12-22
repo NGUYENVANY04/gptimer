@@ -5,16 +5,25 @@
 void congfi_io(void)
 {
 
+    gpio_config_t io_conf_isr_set = {
+        .pin_bit_mask = (1ULL << GPIO_NUM_18 | 1ULL << GPIO_NUM_15),
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_NEGEDGE,
+    };
     gpio_config_t io_conf_isr = {
         .pin_bit_mask = (1ULL << GPIO_NUM_16 | 1ULL << GPIO_NUM_17 | 1ULL << GPIO_NUM_18 |
                          1ULL << GPIO_NUM_0 | 1ULL << GPIO_NUM_12 | 1ULL << GPIO_NUM_15),
         .mode = GPIO_MODE_INPUT,
         .pull_up_en = GPIO_PULLUP_ENABLE,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_NEGEDGE,
+        .intr_type = GPIO_INTR_LOW_LEVEL,
     };
     gpio_config_t relay = {
-        .pin_bit_mask = (1ULL << PIN_RELAY_1 | 1ULL << PIN_RELAY_2 | 1ULL << PIN_RELAY_3),
+        .pin_bit_mask = (1ULL << PIN_RELAY_1 | 1ULL << PIN_RELAY_2 |
+                         1ULL << PIN_RELAY_3 | 1ULL << GPIO_NUM_25 |
+                         1ULL << GPIO_NUM_26),
         .mode = GPIO_MODE_OUTPUT,
         .pull_up_en = GPIO_PULLUP_DISABLE,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
@@ -59,7 +68,7 @@ void congfi_io(void)
     gpio_config(&relay);
     gpio_config(&io_conf);
     gpio_config(&io_conf_22);
-
+    gpio_config(&io_conf_isr_set);
     gpio_set_level(PIN_RELAY_1, 0);
     gpio_set_level(PIN_RELAY_2, 0);
     gpio_set_level(PIN_RELAY_3, 0);
